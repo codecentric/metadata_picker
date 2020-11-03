@@ -1,3 +1,5 @@
+import os
+
 from bs4 import BeautifulSoup
 
 from features.MetadataBase import MetadataBase
@@ -6,44 +8,34 @@ from features.MetadataBase import MetadataBase
 class ExtractLinks(MetadataBase):
     key: str = "extracted_links"
 
-    def _start(self, html_content: str, header: dict) -> list:
-        files = []
-        print("_start2")
-        # print(html_content)
-
+    @staticmethod
+    def __extract_raw_links(html_content: str) -> list:
         soup = BeautifulSoup(html_content, 'html.parser')
-        links_with_text = []
-        for a in soup.find_all('a', href=True):
-            if a.text:
-                links_with_text.append(a['href'])
-        print("links_with_text: ", links_with_text)
+        return list(set([a['href'] for a in soup.find_all(href=True)]))
 
-        # TODO Remove this function
-        def getURL(page):
-            """
+    @staticmethod
+    def __extract_extensions(links: list):
+        file_extensions = [os.path.splitext(link)[-1] for link in links]
+        file_extensions = [x for x in list(set(file_extensions)) if x != ""]
+        return file_extensions
 
-            :param page: html of web page (here: Python home page)
-            :return: urls in that page
-            """
-            start_link = page.find("href")  # formerly "a href"
-            if start_link == -1:
-                return None, 0
-            start_quote = page.find('"', start_link)
-            end_quote = page.find('"', start_quote + 1)
-            url = page[start_quote + 1: end_quote]
-            return url, end_quote
+    @staticmethod
+    def __extract_images(links: list) -> list:
+        filenames = [os.path.splitext(link)[0] for link in links]
+        file_extensions = [os.path.splitext(link)[-1] for link in links]
+        image_extension_whitelist = [".png", ".jpg", ".bmp"]
+        proper_files = [filename + file_extension for filename, file_extension in zip(filenames, file_extensions) if
+                        file_extension in image_extension_whitelist]
+        return proper_files
 
-        while True:
-            url, n = getURL(html_content)
-            html_content = html_content[n:]
-            if url:
-                files.append(url)
-            else:
-                break
-        print("files: ", files)
+    @staticmethod
+    def __extract_malicious_extensions(extensions: list):
+        return []
 
-        s = set(links_with_text)
-        temp3 = [x for x in files if x not in s]
-        print("temp3: ", temp3)
-        print(len(files), len(links_with_text), len(temp3))
-        return files
+    def _start(self, html_content: str, header: dict) -> list:
+        raw_links = self.__extract_raw_links(html_content)
+        image_links = self.__extract_images(raw_links)
+        extensions = self.__extract_extensions(raw_links)
+        malicious_extensions = self.__extract_malicious_extensions(extensions)
+
+        return {"images": image_links, "malicious_extensions": malicious_extensions, "extensions": extensions}
