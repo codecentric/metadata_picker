@@ -9,8 +9,7 @@ class ExtractLinks(MetadataBase):
     key: str = "extracted_links"
 
     @staticmethod
-    def __extract_raw_links(html_content: str) -> list:
-        soup = BeautifulSoup(html_content, 'html.parser')
+    def __extract_raw_links(soup: BeautifulSoup) -> list:
         return list({a['href'] for a in soup.find_all(href=True)})
 
     @staticmethod
@@ -20,21 +19,20 @@ class ExtractLinks(MetadataBase):
         return file_extensions
 
     @staticmethod
-    def __extract_images(links: list) -> list:
-        filenames = [os.path.splitext(link)[0] for link in links]
-        file_extensions = [os.path.splitext(link)[-1] for link in links]
-        image_extension_whitelist = [".png", ".jpg", ".bmp"]
-        proper_files = [filename + file_extension for filename, file_extension in zip(filenames, file_extensions) if
-                        file_extension in image_extension_whitelist]
-        return proper_files
+    def __extract_images(soup: BeautifulSoup) -> list:
+        # TODO: We only gather the url here. There is more information stored here!
+        image_links = [image.attrs.get("src") for image in soup.findAll("img")]
+        return image_links
 
     @staticmethod
     def __extract_malicious_extensions(extensions: list):
         return []
 
     def _start(self, html_content: str, header: dict) -> list:
-        raw_links = self.__extract_raw_links(html_content)
-        image_links = self.__extract_images(raw_links)
+        soup = BeautifulSoup(html_content, 'html.parser')
+
+        raw_links = self.__extract_raw_links(soup)
+        image_links = self.__extract_images(soup)
         extensions = self.__extract_extensions(raw_links)
         malicious_extensions = self.__extract_malicious_extensions(extensions)
 
