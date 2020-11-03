@@ -20,7 +20,8 @@ class Metadata:
             header = {}
         self._logger.info(f"Starting {self.__class__.__name__}")
         values = self._start(html_content=html_content, header=header)
-        return {self.key: values}
+        return {self.key: {"values": values, "tag_list_last_modified": self.tag_list_last_modified,
+                           "tag_list_expires": self.tag_list_expires}}
 
     def _start(self, html_content: str, header: dict) -> list:
         if self.evaluate_header:
@@ -36,8 +37,8 @@ class Metadata:
         return values
 
     def __extract_date_from_list(self):
-        expires_expression = re.compile("[!#:]\sExpires[:=]\s?(\d+)\s?\w{0,4}")
-        last_modified_expression = re.compile("[!#]\sLast modified:\s(\d\d\s\w{3}\s\d{4}\s\d\d:\d\d\s\w{3})")
+        expires_expression = re.compile(r"[!#:]\sExpires[:=]\s?(\d+)\s?\w{0,4}")
+        last_modified_expression = re.compile(r"[!#]\sLast modified:\s(\d\d\s\w{3}\s\d{4}\s\d\d:\d\d\s\w{3})")
         for line in self.tag_list[0:10]:
             match = last_modified_expression.match(line)
             if match:
