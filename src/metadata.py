@@ -1,8 +1,12 @@
+import re
+
 import requests
 
 
 class Metadata:
     tag_list: list = []
+    tag_list_last_modified = ""
+    tag_list_expires: int = 0
     key: str = ""
     url: str = ""
     comment_symbol: str = ""
@@ -31,10 +35,26 @@ class Metadata:
                 values = []
         return values
 
+    def __extract_date_from_list(self):
+        expires_expression = re.compile("[!#:]\sExpires[:=]\s?(\d+)\s?\w{0,4}")
+        last_modified_expression = re.compile("[!#]\sLast modified:\s(\d\d\s\w{3}\s\d{4}\s\d\d:\d\d\s\w{3})")
+        for line in self.tag_list[0:10]:
+            match = last_modified_expression.match(line)
+            if match:
+                self.tag_list_last_modified = match.group(1)
+
+            match = expires_expression.match(line)
+            if match:
+                self.tag_list_expires = int(match.group(1))
+
+            if self.tag_list_last_modified != "" and self.tag_list_expires != 0:
+                break
+
     def __download_tag_list(self) -> None:
         result = requests.get(self.url)
         if result.status_code == 200:
             self.tag_list = result.text.split("\n")
+            self.__extract_date_from_list()
         else:
             self._logger.warning(f"Downloading tag list from '{self.url}' yielded status code '{result.status_code}'.")
 
