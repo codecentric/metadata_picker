@@ -41,9 +41,11 @@ class Manager:
         api_process.start()
 
     def _create_extractors(self):
+
         extractors = [Advertisement, Tracker, IFrameEmbeddable, ContentSecurityPolicy, Cookies, AntiAdBlock,
-                      EasylistGermany, FanboyAnnoyance, FanboySocialMedia, ContentSecurityPolicy, Paywalls, IETracker]
-        extractors = [ExtractLinks]
+                      EasylistGermany, FanboyAnnoyance, FanboySocialMedia, ContentSecurityPolicy, Paywalls, IETracker,
+                      ExtractLinks]
+
         for extractor in extractors:
             self.metadata_extractors.append(extractor(self._logger))
 
