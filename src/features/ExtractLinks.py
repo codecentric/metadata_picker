@@ -24,17 +24,12 @@ class ExtractLinks(MetadataBase):
         image_links = [image.attrs.get("src") for image in soup.findAll("img")]
         return image_links
 
-    @staticmethod
-    def __extract_malicious_extensions(extensions: list):
-        return []
-
     def _start(self, html_content: str, header: dict) -> list:
         soup = BeautifulSoup(html_content, 'html.parser')
 
         raw_links = self.__extract_raw_links(soup)
         image_links = self.__extract_images(soup)
         extensions = self.__extract_extensions(raw_links)
-        malicious_extensions = self.__extract_malicious_extensions(extensions)
 
-        return {"images": image_links, "malicious_extensions": malicious_extensions, "extensions": extensions,
-                "raw_links": raw_links}
+        # FIXME: This breaks the typing. How to resolve?
+        return {"images": image_links, "extensions": extensions, "raw_links": raw_links}
