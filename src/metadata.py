@@ -36,6 +36,13 @@ class Metadata:
                 values = []
         return values
 
+    def __download_tag_list(self) -> None:
+        result = requests.get(self.url)
+        if result.status_code == 200:
+            self.tag_list = result.text.split("\n")
+        else:
+            self._logger.warning(f"Downloading tag list from '{self.url}' yielded status code '{result.status_code}'.")
+
     def __extract_date_from_list(self):
         expires_expression = re.compile(r"[!#:]\sExpires[:=]\s?(\d+)\s?\w{0,4}")
         last_modified_expression = re.compile(r"[!#]\sLast modified:\s(\d\d\s\w{3}\s\d{4}\s\d\d:\d\d\s\w{3})")
@@ -51,14 +58,6 @@ class Metadata:
             if self.tag_list_last_modified != "" and self.tag_list_expires != 0:
                 break
 
-    def __download_tag_list(self) -> None:
-        result = requests.get(self.url)
-        if result.status_code == 200:
-            self.tag_list = result.text.split("\n")
-            self.__extract_date_from_list()
-        else:
-            self._logger.warning(f"Downloading tag list from '{self.url}' yielded status code '{result.status_code}'.")
-
     def __prepare_tag_list(self) -> None:
         self.tag_list = [i for i in self.tag_list if i != ""]
 
@@ -69,4 +68,5 @@ class Metadata:
         """Child function."""
         if self.url != "":
             self.__download_tag_list()
-        self.__prepare_tag_list()
+            self.__extract_date_from_list()
+            self.__prepare_tag_list()
