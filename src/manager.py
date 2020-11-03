@@ -10,6 +10,7 @@ import uvicorn
 
 from app.api import app
 from app.communication import ProcessToDaemonCommunication
+from features.ExtractLinks import ExtractLinks
 from lib.config import MESSAGE_CONTENT, LOGFILE_MANAGER, MESSAGE_HEADERS, MESSAGE_HTML
 from lib.timing import get_utc_now
 from features.MetadataBase import MetadataBase
@@ -42,6 +43,7 @@ class Manager:
     def _create_extractors(self):
         extractors = [Advertisement, Tracker, IFrameEmbeddable, ContentSecurityPolicy, Cookies, AntiAdBlock,
                       EasylistGermany, FanboyAnnoyance, FanboySocialMedia, ContentSecurityPolicy, Paywalls, IETracker]
+        extractors = [ExtractLinks]
         for extractor in extractors:
             self.metadata_extractors.append(extractor(self._logger))
 
