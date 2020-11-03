@@ -11,7 +11,7 @@ class ExtractLinks(MetadataBase):
     @staticmethod
     def __extract_raw_links(html_content: str) -> list:
         soup = BeautifulSoup(html_content, 'html.parser')
-        return list(set([a['href'] for a in soup.find_all(href=True)]))
+        return list({a['href'] for a in soup.find_all(href=True)})
 
     @staticmethod
     def __extract_extensions(links: list):
@@ -38,4 +38,5 @@ class ExtractLinks(MetadataBase):
         extensions = self.__extract_extensions(raw_links)
         malicious_extensions = self.__extract_malicious_extensions(extensions)
 
-        return {"images": image_links, "malicious_extensions": malicious_extensions, "extensions": extensions}
+        return {"images": image_links, "malicious_extensions": malicious_extensions, "extensions": extensions,
+                "raw_links": raw_links}
