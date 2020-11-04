@@ -8,6 +8,41 @@ from pathlib import Path
 import requests
 
 
+def _build_and_run_docker():
+    # Change to main project folder to have dockerfile etc. in scope
+    current_dir = Path(os.getcwd())
+    new_dir = current_dir.parents[0]
+    if "tests" in str(current_dir):
+        print(
+            f"Changing working directory from '{current_dir}' to '{new_dir}'"
+        )
+        os.chdir(new_dir)
+
+    print("building docker")
+    process = subprocess.call(
+        ["docker build -t oeh-search-meta:latest ."], shell=True
+    )
+
+    print("docker build. running docker compose")
+    print(f"process after building docker: {process}")
+    process = subprocess.Popen(
+        ["docker-compose -f docker-compose.yml up"], shell=True
+    )
+    print(f"process after docker-compose: {process}")
+
+    # time needed for docker to launch and start the REST interface
+    time.sleep(0.5)
+
+    os.chdir(current_dir)
+
+
+def _stop_docker():
+    process = subprocess.call(
+        ["docker stop oeh-search-meta_extractor_1"], shell=True
+    )
+    print(f"process after docker stop: {process}")
+
+
 def test_api_extract_meta():
     url = "http://0.0.0.0:5057/extract_meta"
 
@@ -62,40 +97,11 @@ def test_api_extract_meta():
     )
     headers = {"Content-Type": "application/json"}
 
-    # Change to main project folder to have dockerfile etc. in scope
-    current_dir = Path(os.getcwd())
-    new_dir = current_dir.parents[0]
-    if "tests" in str(current_dir):
-        print(
-            f"Changing working directory from '{current_dir}' to '{new_dir}'"
-        )
-        os.chdir(new_dir)
-
-    print("building docker")
-    process = subprocess.call(
-        ["docker build -t oeh-search-meta:latest ."], shell=True
-    )
-
-    print("docker build. running docker compose")
-    print(f"process after building docker: {process}")
-    process = subprocess.Popen(
-        ["docker-compose -f docker-compose.yml up"], shell=True
-    )
-    print(f"process after docker-compose: {process}")
-
-    # time needed for docker to launch and start the REST interface
-    time.sleep(0.5)
-
-    os.chdir(current_dir)
+    _build_and_run_docker()
 
     response = requests.request(
         "POST", url, headers=headers, data=payload, timeout=20
     )
-
-    process = subprocess.call(
-        ["docker stop oeh-search-meta_extractor_1"], shell=True
-    )
-    print(f"process after docker stop: {process}")
 
     try:
         data = json.loads(response.text)
@@ -108,3 +114,18 @@ def test_api_extract_meta():
     print(data)
     print(is_json, has_url, has_meta)
     assert is_json and has_url and has_meta
+
+
+def test_ping_container():
+    url = "http://0.0.0.0:5057/_ping"
+
+    headers = {"Content-Type": "application/json"}
+
+    _build_and_run_docker()
+
+    response = requests.request("GET", url, headers=headers, timeout=20)
+
+    ok = "ok"
+    data = response.text.replace('"', "")
+    is_ok = data == ok
+    assert is_ok
