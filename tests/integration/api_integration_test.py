@@ -7,6 +7,9 @@ from pathlib import Path
 
 import requests
 
+DOCKER_TEST_URL = "http://0.0.0.0:5057/"
+DOCKER_TEST_HEADERS = {"Content-Type": "application/json"}
+
 
 def _build_and_run_docker():
     # Change to main project folder to have dockerfile etc. in scope
@@ -43,7 +46,7 @@ def _stop_docker():
 
 
 def test_api_extract_meta():
-    url = "http://0.0.0.0:5057/extract_meta"
+    url = DOCKER_TEST_URL + "extract_meta"
 
     payload = (
         '{"url": "here", "content": '
@@ -94,12 +97,11 @@ def test_api_extract_meta():
         "b'Expires': [b'0'], b'Content-Type': [b'application/xml'], b'Vary': [b'Accept-Encoding'],"
         " b'X-Content-Type-Options': [b'nosniff'], b'X-Frame-Options': [b'sameorigin']}\"}}"
     )
-    headers = {"Content-Type": "application/json"}
 
     _build_and_run_docker()
 
     response = requests.request(
-        "POST", url, headers=headers, data=payload, timeout=20
+        "POST", url, headers=DOCKER_TEST_HEADERS, data=payload, timeout=20
     )
 
     try:
@@ -115,13 +117,13 @@ def test_api_extract_meta():
 
 
 def test_ping_container():
-    url = "http://0.0.0.0:5057/_ping"
-
-    headers = {"Content-Type": "application/json"}
+    url = DOCKER_TEST_URL + "_ping"
 
     _build_and_run_docker()
 
-    response = requests.request("GET", url, headers=headers, timeout=20)
+    response = requests.request(
+        "GET", url, headers=DOCKER_TEST_HEADERS, timeout=20
+    )
 
     ok = "ok"
     data = response.text.replace('"', "")
