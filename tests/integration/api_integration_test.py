@@ -23,7 +23,6 @@ def _build_and_run_docker():
         ["docker build -t oeh-search-meta:latest ."], shell=True
     )
 
-    print("docker build. running docker compose")
     print(f"process after building docker: {process}")
     process = subprocess.Popen(
         ["docker-compose -f docker-compose.yml up"], shell=True
@@ -111,8 +110,7 @@ def test_api_extract_meta():
         is_json = False
     has_url = "url" in data.keys()
     has_meta = "url" in data.keys()
-    print(data)
-    print(is_json, has_url, has_meta)
+
     assert is_json and has_url and has_meta
 
 
