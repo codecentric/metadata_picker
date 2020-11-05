@@ -66,3 +66,16 @@ class IFrameEmbeddable(MetadataBase):
     tag_list = ["X-Frame-Options"]
     key: str = "iframe_embeddable"
     evaluate_header = True
+
+
+class PopUp(MetadataBase):
+    tag_list = [
+        "popup",
+        "popuptext",
+        "modal",
+        "modal fade",
+        "modal-dialog",
+        "interstitial",
+        "Interstitial",
+    ]
+    key = "popup"
