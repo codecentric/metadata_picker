@@ -30,7 +30,7 @@ class MetadataBase:
             }
         }
         if self.tag_list_last_modified != "":
-            data.update(
+            data[self.key].update(
                 {
                     "tag_list_last_modified": self.tag_list_last_modified,
                     "tag_list_expires": self.tag_list_expires,
