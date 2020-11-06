@@ -1,7 +1,7 @@
 import adblockparser
 import pytest
 
-from features.MetadataBase import MetadataBase
+from features.metadata_base import MetadataBase
 
 
 @pytest.fixture
@@ -35,7 +35,7 @@ def test_start(metadatabase: MetadataBase, mocker):
     html_content = "html_content"
     header = "header"
     metadatabase.key = "test_key"
-    _start_spy = mocker.spy(metadatabase, "_start")
+    start_spy = mocker.spy(metadatabase, "_start")
     values = metadatabase.start(html_content=html_content, header=header)
 
     values_has_only_one_key = len(values.keys()) == 1
@@ -49,14 +49,14 @@ def test_start(metadatabase: MetadataBase, mocker):
     if "tag_list_last_modified" in values[metadatabase.key].keys():
         assert values[metadatabase.key]["tag_list_last_modified"] == ""
         assert values[metadatabase.key]["tag_list_expires"] == 0
-    assert _start_spy.call_count == 1
-    assert _start_spy.call_args_list[0][1] == {
+    assert start_spy.call_count == 1
+    assert start_spy.call_args_list[0][1] == {
         html_content: html_content,
         header: header,
     }
 
     _ = metadatabase.start(html_content=html_content)
-    assert _start_spy.call_args_list[1][1] == {
+    assert start_spy.call_args_list[1][1] == {
         html_content: html_content,
         header: {},
     }
@@ -149,11 +149,4 @@ def test_easylist_filter():
 
     for url, to_be_blocked in urls_to_be_blocked:
         result = rules.should_block(url)  # "http://ads.example.com"
-        print(url, result)
         assert result == to_be_blocked
-    # result = rules.should_block("http://ads.examples.com")
-    # print(result)
-    # result = rules.should_block("http://ads.example.com/notbanner", {'script': False})
-    # print(result)
-    # result = rules.should_block("http://ads.example.com/notbanner", {'script': True})
-    # print(result)

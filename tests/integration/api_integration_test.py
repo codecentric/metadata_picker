@@ -132,7 +132,7 @@ def test_ping_container():
     _build_and_run_docker()
 
     response = requests.request(
-        "GET", url, headers=DOCKER_TEST_HEADERS, timeout=20
+        "GET", url, headers=DOCKER_TEST_HEADERS, timeout=60
     )
 
     data = json.loads(response.text)

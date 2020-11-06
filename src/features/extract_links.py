@@ -2,7 +2,7 @@ import os
 
 from bs4 import BeautifulSoup
 
-from features.MetadataBase import MetadataBase
+from features.metadata_base import MetadataBase
 
 
 class ExtractLinks(MetadataBase):

@@ -1,4 +1,4 @@
-from features.MetadataBase import MetadataBase
+from features.metadata_base import MetadataBase
 
 
 class Advertisement(MetadataBase):
