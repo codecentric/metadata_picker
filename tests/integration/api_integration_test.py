@@ -34,6 +34,16 @@ def _build_and_run_docker():
     )
 
     print(f"process after building docker: {process}")
+
+    # stopping any old container of the same name prior to launch
+
+    subprocess.call(
+        [
+            "docker stop $(docker ps -a -q --filter ancestor=oeh-search-meta:latest --format='{{.ID}}')"
+        ],
+        shell=True,
+    )
+
     process = subprocess.Popen(
         ["docker-compose -f docker-compose.yml up"], shell=True
     )
@@ -47,8 +57,12 @@ def _build_and_run_docker():
 
 def _stop_docker():
     process = subprocess.call(
-        ["docker stop oeh-search-meta_extractor_1"], shell=True
+        [
+            "docker stop $(docker ps -a -q --filter ancestor=oeh-search-meta:latest --format='{{.ID}}')"
+        ],
+        shell=True,
     )
+
     print(f"process after docker stop: {process}")
 
 
