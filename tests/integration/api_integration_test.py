@@ -5,6 +5,7 @@ import time
 from json import JSONDecodeError
 from pathlib import Path
 
+import pytest
 import requests
 
 DOCKER_TEST_URL = "http://0.0.0.0:5057/"
@@ -20,6 +21,12 @@ def _build_and_run_docker():
             f"Changing working directory from '{current_dir}' to '{new_dir}'"
         )
         os.chdir(new_dir)
+
+    print("Exporting requirements")
+    process = subprocess.call(
+        ["poetry export -o requirements.txt"], shell=True
+    )
+    print(f"process after exporting requirements: {process}")
 
     print("building docker")
     process = subprocess.call(
@@ -45,6 +52,9 @@ def _stop_docker():
     print(f"process after docker stop: {process}")
 
 
+@pytest.mark.skip(
+    reason="This test takes a lot of time, depending on payload etc. Execute manually."
+)
 def test_api_extract_meta():
     url = DOCKER_TEST_URL + "extract_meta"
 
@@ -101,7 +111,7 @@ def test_api_extract_meta():
     _build_and_run_docker()
 
     response = requests.request(
-        "POST", url, headers=DOCKER_TEST_HEADERS, data=payload, timeout=20
+        "POST", url, headers=DOCKER_TEST_HEADERS, data=payload, timeout=60
     )
 
     try:

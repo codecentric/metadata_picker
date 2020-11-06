@@ -1,6 +1,3 @@
-from bs4 import BeautifulSoup
-
-from features.EasylistFilter import EasyFilter
 from features.MetadataBase import MetadataBase
 
 
@@ -8,21 +5,6 @@ class Advertisement(MetadataBase):
     url: str = "https://easylist.to/easylist/easylist.txt"
     key: str = "ads"
     comment_symbol = "!"
-
-    def _start(self, html_content: str, header: dict) -> dict:
-        soup = BeautifulSoup(html_content, "html.parser")
-        raw_links = list({a["href"] for a in soup.find_all(href=True)})
-
-        easylist = self.tag_list
-
-        print(raw_links)
-        found_matches = []
-        for url in raw_links:
-            adblock_filter = EasyFilter(easylist)
-            found_matches.append(adblock_filter.match(url))
-
-            print(f"For url '{url}' found these matches: '{found_matches}'")
-        return {"values": found_matches}
 
 
 class Tracker(MetadataBase):

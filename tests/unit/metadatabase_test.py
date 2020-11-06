@@ -1,3 +1,4 @@
+import adblockparser
 import pytest
 
 from features.MetadataBase import MetadataBase
@@ -111,3 +112,48 @@ def test_setup(metadatabase: MetadataBase, mocker):
     assert metadatabase._download_tag_list.call_count == 1
     assert extract_date_from_list_spy.call_count == 1
     assert prepare_tag_spy.call_count == 1
+
+
+"""
+--------------------------------------------------------------------------------
+"""
+
+
+def _create_sample_easylist() -> list:
+    easylist = [
+        "! *** easylist:easylist/easylist_general_block.txt ***",
+        r"/adv_horiz.",
+        r"@@||imx.to/dropzone.js$script",
+        r"||testimx.to/dropzone.js$script",
+        r"||testimx2.to/dropzone.js",
+    ]
+
+    return easylist
+
+
+def _create_sample_urls() -> list:
+    url_to_be_blocked = [
+        ("https://www.dictionary.com/", False),
+        ("/adv_horiz.", True),
+        ("imx.to/dropzone.js", False),
+        ("testimx.to/dropzone.js", False),
+        ("testimx2.to/dropzone.js", True),
+    ]
+    return url_to_be_blocked
+
+
+def test_easylist_filter():
+    urls_to_be_blocked = _create_sample_urls()
+
+    rules = adblockparser.AdblockRules(_create_sample_easylist())
+
+    for url, to_be_blocked in urls_to_be_blocked:
+        result = rules.should_block(url)  # "http://ads.example.com"
+        print(url, result)
+        assert result == to_be_blocked
+    # result = rules.should_block("http://ads.examples.com")
+    # print(result)
+    # result = rules.should_block("http://ads.example.com/notbanner", {'script': False})
+    # print(result)
+    # result = rules.should_block("http://ads.example.com/notbanner", {'script': True})
+    # print(result)
