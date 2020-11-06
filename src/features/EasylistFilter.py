@@ -89,11 +89,11 @@ class EasylistRule:
 
 
 class EasyFilter:
-    def __init__(self, easylist: str):
+    def __init__(self, easylist: list):
         self.comment = "!"
         self.index = {}
 
-        for line in easylist.split("\n"):
+        for line in easylist:
             if not line.startswith(self.comment) and "##" not in line:
                 rule = self._create_rule(line)
                 if rule:
@@ -132,7 +132,8 @@ def main():
         easylist = easylist_file.read()
 
     for url in URLS:
-        adblock_filter = EasyFilter(easylist)
+        easylist_splitted = easylist.split("\n")
+        adblock_filter = EasyFilter(easylist_splitted)
         found_matches = adblock_filter.match(url)
 
         print(f"For url '{url}' found these matches: '{found_matches}'")
