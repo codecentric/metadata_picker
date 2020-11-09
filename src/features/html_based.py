@@ -19,6 +19,7 @@ class EasyPrivacy(MetadataBase):
         "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_thirdparty.txt",
         "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_thirdparty_international.txt",
     ]
+    key = "easyprivacy"
 
 
 class IETracker(MetadataBase):
@@ -50,16 +51,12 @@ class AntiAdBlock(MetadataBase):
 
 
 class AntiAdBlockGerman(MetadataBase):
-    url: str = (
-        "https://github.com/easylist/antiadblockfilters/blob/master/antiadblockfilters/antiadblock_german.txt"
-    )
+    url: str = "https://github.com/easylist/antiadblockfilters/blob/master/antiadblockfilters/antiadblock_german.txt"
     key: str = "antiadblock_german"
 
 
 class AntiAdBlockEnglish(MetadataBase):
-    url: str = (
-        "https://github.com/easylist/antiadblockfilters/blob/master/antiadblockfilters/antiadblock_english.txt"
-    )
+    url: str = "https://github.com/easylist/antiadblockfilters/blob/master/antiadblockfilters/antiadblock_english.txt"
     key: str = "antiadblock_english"
 
 
@@ -79,7 +76,7 @@ class EasylistGermany(MetadataBase):
         "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_specific_block_popup.txt",
         "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_specific_hide.txt",
         "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_thirdparty.txt",
-        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_thirdparty_popup.txt"
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_thirdparty_popup.txt",
     ]
     key: str = "easylist_germany"
 

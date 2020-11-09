@@ -1,4 +1,5 @@
 import re
+from collections import OrderedDict
 
 import adblockparser
 import requests
@@ -119,13 +120,15 @@ class MetadataBase:
                 self.tag_list_expires = int(match.group(1))
 
             if (
-                    self.tag_list_last_modified != ""
-                    and self.tag_list_expires != 0
+                self.tag_list_last_modified != ""
+                and self.tag_list_expires != 0
             ):
                 break
 
     def _prepare_tag_list(self) -> None:
         self.tag_list = [i for i in self.tag_list if i != ""]
+
+        self.tag_list = list(OrderedDict.fromkeys(self.tag_list))
 
         if self.comment_symbol != "":
             self.tag_list = [
