@@ -7,53 +7,18 @@ class Advertisement(MetadataBase):
 
 
 class EasyPrivacy(MetadataBase):
-    url: str = "https://easylist.to/easylist/easyprivacy.txt"
-    key: str = "easyprivacy"
-
-
-class EasyprivacyGeneral(MetadataBase):
-    url: str = "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_general.txt"
-    key: str = "easyprivacy_general"
-
-
-class EasyprivacyAllowlist(MetadataBase):
-    url: str = "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_allowlist.txt"
-    key: str = "easyprivacy_allowlist"
-
-
-class EasyprivacyAllowlistInternational(MetadataBase):
-    url: str = "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_allowlist_international.txt"
-    key: str = "easyprivacy_allowlist_international"
-
-
-class EasyprivacySpecific(MetadataBase):
-    url: str = "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_specific.txt"
-    key: str = "easyprivacy_specific"
-
-
-class EasyprivacySpecificInternational(MetadataBase):
-    url: str = "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_specific_international.txt"
-    key: str = "easyprivacy_specific_international"
-
-
-class EasyprivacyThirdparty(MetadataBase):
-    url: str = "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_thirdparty.txt"
-    key: str = "easyprivacy_thirdparty"
-
-
-class EasyprivacyThirdpartyInternational(MetadataBase):
-    url: str = "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_thirdparty_international.txt"
-    key: str = "easyprivacy_thirdparty_international"
-
-
-class EasyprivacyTrackingservers(MetadataBase):
-    url: str = "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_trackingservers.txt"
-    key: str = "easyprivacy_trackingservers"
-
-
-class EasyprivacyTrackingserversInternational(MetadataBase):
-    url: str = "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_trackingservers_international.txt"
-    key: str = "easyprivacy_trackingservers_international"
+    urls: list = [
+        "https://easylist.to/easylist/easyprivacy.txt",
+        "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_general.txt",
+        "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_allowlist.txt",
+        "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_allowlist_international.txt",
+        "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_specific.txt",
+        "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_specific_international.txt",
+        "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_trackingservers.txt",
+        "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_trackingservers_international.txt",
+        "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_thirdparty.txt",
+        "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_thirdparty_international.txt",
+    ]
 
 
 class IETracker(MetadataBase):
@@ -65,11 +30,6 @@ class IETracker(MetadataBase):
 class Cookies(MetadataBase):
     url: str = "https://easylist-downloads.adblockplus.org/easylist-cookie.txt"
     key: str = "cookies"
-
-
-class EasylistGermany(MetadataBase):
-    url: str = "https://easylist.to/easylistgermany/easylistgermany.txt"
-    key: str = "easylist_germany"
 
 
 class FanboyAnnoyance(MetadataBase):
@@ -103,8 +63,9 @@ class AntiAdBlockEnglish(MetadataBase):
     key: str = "antiadblock_english"
 
 
-class EasylistGermanyAdservers(MetadataBase):
+class EasylistGermany(MetadataBase):
     urls: list = [
+        "https://easylist.to/easylistgermany/easylistgermany.txt",
         "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_adservers.txt",
         "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_adservers_popup.txt",
         "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_allowlist.txt",
@@ -120,14 +81,7 @@ class EasylistGermanyAdservers(MetadataBase):
         "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_thirdparty.txt",
         "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_thirdparty_popup.txt"
     ]
-    key: str = "easylistgermany_adservers"
-
-    def _download_tag_list(self):
-        complete_tag_list = []
-        for url in self.urls:
-            self.url = url
-            super()._download_tag_list()
-            complete_tag_list.append(self.tag_list)
+    key: str = "easylist_germany"
 
 
 class Paywalls(MetadataBase):

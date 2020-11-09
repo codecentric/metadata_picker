@@ -13,6 +13,7 @@ class MetadataBase:
     tag_list_expires: int = 0
     key: str = ""
     url: str = ""
+    urls: list = []
     comment_symbol: str = ""
     evaluate_header: bool = False
 
@@ -85,6 +86,13 @@ class MetadataBase:
             values = self._work_html_content(html_content)
         return {"values": values}
 
+    def _download_multiple_tag_lists(self):
+        complete_tag_list = []
+        for url in self.urls:
+            self.url = url
+            self._download_tag_list()
+            complete_tag_list.append(self.tag_list)
+
     def _download_tag_list(self) -> None:
         result = requests.get(self.url)
         if result.status_code == 200:
@@ -111,8 +119,8 @@ class MetadataBase:
                 self.tag_list_expires = int(match.group(1))
 
             if (
-                self.tag_list_last_modified != ""
-                and self.tag_list_expires != 0
+                    self.tag_list_last_modified != ""
+                    and self.tag_list_expires != 0
             ):
                 break
 
@@ -128,7 +136,11 @@ class MetadataBase:
 
     def setup(self) -> None:
         """Child function."""
-        if self.url != "":
+        if self.urls:
+            self._download_multiple_tag_lists()
+        elif self.url != "":
             self._download_tag_list()
+
+        if self.tag_list:
             self._extract_date_from_list()
             self._prepare_tag_list()

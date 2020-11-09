@@ -18,15 +18,6 @@ from features.html_based import (
     Cookies,
     EasylistGermany,
     EasyPrivacy,
-    EasyprivacyAllowlist,
-    EasyprivacyAllowlistInternational,
-    EasyprivacyGeneral,
-    EasyprivacySpecific,
-    EasyprivacySpecificInternational,
-    EasyprivacyThirdparty,
-    EasyprivacyThirdpartyInternational,
-    EasyprivacyTrackingservers,
-    EasyprivacyTrackingserversInternational,
     FanboyAnnoyance,
     FanboySocialMedia,
     IETracker,
@@ -74,15 +65,6 @@ class Manager:
     def _create_extractors(self):
 
         extractors = [
-            EasyprivacyGeneral,
-            EasyprivacyAllowlist,
-            EasyprivacyAllowlistInternational,
-            EasyprivacySpecific,
-            EasyprivacySpecificInternational,
-            EasyprivacyThirdparty,
-            EasyprivacyThirdpartyInternational,
-            EasyprivacyTrackingservers,
-            EasyprivacyTrackingserversInternational,
             Advertisement,
             EasyPrivacy,
             IFrameEmbeddable,
@@ -186,20 +168,20 @@ class Manager:
     def _preprocess_header(header: str) -> dict:
         header = (
             header.replace("b'", '"')
-            .replace("/'", '"')
-            .replace("'", '"')
-            .replace('""', '"')
-            .replace('/"', "/")
+                .replace("/'", '"')
+                .replace("'", '"')
+                .replace('""', '"')
+                .replace('/"', "/")
         )
 
         idx = header.find('b"')
         if idx >= 0 and header[idx - 1] == "[":
             bracket_idx = header[idx:].find("]")
             header = (
-                header[:idx]
-                + '"'
-                + header[idx + 2 : idx + bracket_idx - 2].replace('"', " ")
-                + header[idx + bracket_idx - 1 :]
+                    header[:idx]
+                    + '"'
+                    + header[idx + 2: idx + bracket_idx - 2].replace('"', " ")
+                    + header[idx + bracket_idx - 1:]
             )
 
         header = json.loads(header)
