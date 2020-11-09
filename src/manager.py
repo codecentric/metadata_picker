@@ -17,12 +17,21 @@ from features.html_based import (
     ContentSecurityPolicy,
     Cookies,
     EasylistGermany,
+    EasyPrivacy,
+    EasyprivacyAllowlist,
+    EasyprivacyAllowlistInternational,
+    EasyprivacyGeneral,
+    EasyprivacySpecific,
+    EasyprivacySpecificInternational,
+    EasyprivacyThirdparty,
+    EasyprivacyThirdpartyInternational,
+    EasyprivacyTrackingservers,
+    EasyprivacyTrackingserversInternational,
     FanboyAnnoyance,
     FanboySocialMedia,
     IETracker,
     IFrameEmbeddable,
     Paywalls,
-    Tracker,
 )
 from features.metadata_base import MetadataBase
 from lib.config import (
@@ -65,8 +74,17 @@ class Manager:
     def _create_extractors(self):
 
         extractors = [
+            EasyprivacyGeneral,
+            EasyprivacyAllowlist,
+            EasyprivacyAllowlistInternational,
+            EasyprivacySpecific,
+            EasyprivacySpecificInternational,
+            EasyprivacyThirdparty,
+            EasyprivacyThirdpartyInternational,
+            EasyprivacyTrackingservers,
+            EasyprivacyTrackingserversInternational,
             Advertisement,
-            Tracker,
+            EasyPrivacy,
             IFrameEmbeddable,
             ContentSecurityPolicy,
             Cookies,
