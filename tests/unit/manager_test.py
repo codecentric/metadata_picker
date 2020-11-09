@@ -10,6 +10,7 @@ def manager(mocker):
     Manager._create_logger = mocker.MagicMock()
     Manager._create_api = mocker.MagicMock()
     Manager._logger = mocker.MagicMock()
+    Manager.setup = mocker.MagicMock()
 
     with mock.patch("manager.Manager.run"):
         manager = Manager()
