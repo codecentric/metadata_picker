@@ -89,6 +89,47 @@ class AntiAdBlock(MetadataBase):
     key: str = "anti_adblock"
 
 
+class AntiAdBlockGerman(MetadataBase):
+    url: str = (
+        "https://github.com/easylist/antiadblockfilters/blob/master/antiadblockfilters/antiadblock_german.txt"
+    )
+    key: str = "antiadblock_german"
+
+
+class AntiAdBlockEnglish(MetadataBase):
+    url: str = (
+        "https://github.com/easylist/antiadblockfilters/blob/master/antiadblockfilters/antiadblock_english.txt"
+    )
+    key: str = "antiadblock_english"
+
+
+class EasylistGermanyAdservers(MetadataBase):
+    urls: list = [
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_adservers.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_adservers_popup.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_allowlist.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_allowlist_dimensions.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_allowlist_general_hide.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_allowlist_popup.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_general_block.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_general_block_popup.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_general_hide.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_specific_block.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_specific_block_popup.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_specific_hide.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_thirdparty.txt",
+        "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_thirdparty_popup.txt"
+    ]
+    key: str = "easylistgermany_adservers"
+
+    def _download_tag_list(self):
+        complete_tag_list = []
+        for url in self.urls:
+            self.url = url
+            super()._download_tag_list()
+            complete_tag_list.append(self.tag_list)
+
+
 class Paywalls(MetadataBase):
     tag_list = ["paywall", "paywalluser"]
     key: str = "paywall"
