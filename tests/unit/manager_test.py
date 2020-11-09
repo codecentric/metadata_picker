@@ -26,7 +26,7 @@ def test_init(manager: Manager, mocker):
     assert manager._create_logger.call_count == 1
     assert manager._create_api.call_count == 1
     assert run_spy.call_count == 0
-    assert len(manager.metadata_extractors) == 13
+    assert len(manager.metadata_extractors) == 17
     assert manager.run_loop
 
 

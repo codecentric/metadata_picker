@@ -14,15 +14,20 @@ from features.extract_links import ExtractLinks
 from features.html_based import (
     Advertisement,
     AntiAdBlock,
+    AntiAdBlockEnglish,
+    AntiAdBlockGerman,
     ContentSecurityPolicy,
     Cookies,
+    EasylistAdult,
     EasylistGermany,
     EasyPrivacy,
     FanboyAnnoyance,
+    FanboyNotification,
     FanboySocialMedia,
     IETracker,
     IFrameEmbeddable,
     Paywalls,
+    PopUp,
 )
 from features.metadata_base import MetadataBase
 from lib.config import (
@@ -67,17 +72,21 @@ class Manager:
         extractors = [
             Advertisement,
             EasyPrivacy,
-            IFrameEmbeddable,
-            ContentSecurityPolicy,
-            Cookies,
-            AntiAdBlock,
-            EasylistGermany,
-            FanboyAnnoyance,
-            FanboySocialMedia,
-            ContentSecurityPolicy,
-            Paywalls,
-            IETracker,
             ExtractLinks,
+            IETracker,
+            Cookies,
+            FanboyAnnoyance,
+            FanboyNotification,
+            FanboySocialMedia,
+            AntiAdBlock,
+            AntiAdBlockGerman,
+            AntiAdBlockEnglish,
+            EasylistGermany,
+            EasylistAdult,
+            Paywalls,
+            ContentSecurityPolicy,
+            IFrameEmbeddable,
+            PopUp,
         ]
 
         for extractor in extractors:
@@ -168,20 +177,20 @@ class Manager:
     def _preprocess_header(header: str) -> dict:
         header = (
             header.replace("b'", '"')
-                .replace("/'", '"')
-                .replace("'", '"')
-                .replace('""', '"')
-                .replace('/"', "/")
+            .replace("/'", '"')
+            .replace("'", '"')
+            .replace('""', '"')
+            .replace('/"', "/")
         )
 
         idx = header.find('b"')
         if idx >= 0 and header[idx - 1] == "[":
             bracket_idx = header[idx:].find("]")
             header = (
-                    header[:idx]
-                    + '"'
-                    + header[idx + 2: idx + bracket_idx - 2].replace('"', " ")
-                    + header[idx + bracket_idx - 1:]
+                header[:idx]
+                + '"'
+                + header[idx + 2 : idx + bracket_idx - 2].replace('"', " ")
+                + header[idx + bracket_idx - 1 :]
             )
 
         header = json.loads(header)

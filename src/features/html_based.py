@@ -2,7 +2,24 @@ from features.metadata_base import MetadataBase
 
 
 class Advertisement(MetadataBase):
-    url: str = "https://easylist.to/easylist/easylist.txt"
+    urls = [
+        "https://easylist.to/easylist/easylist.txt",
+        "https://easylist.to/easylist/easylist_adservers.txt",
+        "https://easylist.to/easylist/easylist_adservers_popup.txt",
+        "https://easylist.to/easylist/easylist_allowlist.txt",
+        "https://easylist.to/easylist/easylist_allowlist_dimensions.txt",
+        "https://easylist.to/easylist/easylist_allowlist_general_hide.txt",
+        "https://easylist.to/easylist/easylist_allowlist_popup.txt",
+        "https://easylist.to/easylist/easylist_general_block.txt",
+        "https://easylist.to/easylist/easylist_general_block_dimensions.txt",
+        "https://easylist.to/easylist/easylist_general_block_popup.txt",
+        "https://easylist.to/easylist/easylist_general_hide.txt",
+        "https://easylist.to/easylist/easylist_specific_block.txt",
+        "https://easylist.to/easylist/easylist_specific_block_popup.txt",
+        "https://easylist.to/easylist/easylist_specific_hide.txt",
+        "https://easylist.to/easylist/easylist_thirdparty.txt",
+        "https://easylist.to/easylist/easylist_thirdparty_popup.txt",
+    ]
     key: str = "ads"
 
 
@@ -29,17 +46,60 @@ class IETracker(MetadataBase):
 
 
 class Cookies(MetadataBase):
-    url: str = "https://easylist-downloads.adblockplus.org/easylist-cookie.txt"
+    urls = [
+        "https://easylist-downloads.adblockplus.org/easylist-cookie.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_cookie/easylist_cookie_allowlist.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_cookie/easylist_cookie_allowlist_general_hide.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_cookie/easylist_cookie_general_block.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_cookie/easylist_cookie_general_hide.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_cookie/easylist_cookie_international_specific_block.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_cookie/easylist_cookie_international_specific_hide.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_cookie/easylist_cookie_specific_block.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_cookie/easylist_cookie_specific_hide.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_cookie/easylist_cookie_thirdparty.txt",
+    ]
     key: str = "cookies"
 
 
 class FanboyAnnoyance(MetadataBase):
-    url: str = "https://easylist.to/easylist/fanboy-annoyance.txt"
+    urls = [
+        "https://easylist.to/easylist/fanboy-annoyance.txt",
+        "https://easylist.to/easylist/fanboy_annoyance_allowlist.txt",
+        "https://easylist.to/easylist/fanboy_annoyance_allowlist_general_hide.txt",
+        "https://easylist.to/easylist/fanboy_annoyance_general_block.txt",
+        "https://easylist.to/easylist/fanboy_annoyance_general_hide.txt",
+        "https://easylist.to/easylist/fanboy_annoyance_international.txt",
+        "https://easylist.to/easylist/fanboy_annoyance_specific_block.txt",
+        "https://easylist.to/easylist/fanboy_annoyance_thirdparty.txt",
+    ]
     key: str = "fanboy_annoyance"
 
 
+class FanboyNotification(MetadataBase):
+    urls = [
+        "https://easylist.to/easylist/fanboy_notifications_allowlist.txt",
+        "https://easylist.to/easylist/fanboy_notifications_allowlist_general_hide.txt",
+        "https://easylist.to/easylist/fanboy_notifications_general_block.txt",
+        "https://easylist.to/easylist/fanboy_notifications_general_hide.txt",
+        "https://easylist.to/easylist/fanboy_notifications_specific_block.txt",
+        "https://easylist.to/easylist/fanboy_notifications_specific_hide.txt",
+        "https://easylist.to/easylist/fanboy_notifications_thirdparty.txt",
+    ]
+    key: str = "fanboy_notification"
+
+
 class FanboySocialMedia(MetadataBase):
-    url: str = "https://easylist.to/easylist/fanboy-social.txt"
+    urls = [
+        "https://easylist.to/easylist/fanboy-social.txt",
+        "https://easylist.to/easylist/fanboy_social_allowlist.txt",
+        "https://easylist.to/easylist/fanboy_social_allowlist_general_hide.txt",
+        "https://easylist.to/easylist/fanboy_social_general_block.txt",
+        "https://easylist.to/easylist/fanboy_social_general_hide.txt",
+        "https://easylist.to/easylist/fanboy_social_international.txt",
+        "https://easylist.to/easylist/fanboy_social_specific_block.txt",
+        "https://easylist.to/easylist/fanboy_social_specific_hide.txt",
+        "https://easylist.to/easylist/fanboy_social_thirdparty.txt",
+    ]
     key: str = "fanboy_social"
 
 
@@ -79,6 +139,21 @@ class EasylistGermany(MetadataBase):
         "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_thirdparty_popup.txt",
     ]
     key: str = "easylist_germany"
+
+
+class EasylistAdult(MetadataBase):
+    urls: list = [
+        "https://github.com/easylist/easylist/blob/master/easylist_adult/adult_adservers.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_adult/adult_adservers_popup.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_adult/adult_allowlist.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_adult/adult_allowlist_popup.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_adult/adult_specific_block.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_adult/adult_specific_block_popup.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_adult/adult_specific_hide.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_adult/adult_thirdparty.txt",
+        "https://github.com/easylist/easylist/blob/master/easylist_adult/adult_thirdparty_popup.txt",
+    ]
+    key: str = "easylist_adult"
 
 
 class Paywalls(MetadataBase):
