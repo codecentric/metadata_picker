@@ -4,6 +4,7 @@ import zipfile
 from urllib.parse import urlparse
 
 import requests
+from bs4 import BeautifulSoup
 
 from features.metadata_base import MetadataBase
 
@@ -20,29 +21,45 @@ class ExtractFromFiles(MetadataBase):
 
         open(filename, "wb").write(result.content)
 
-    def _extract_docx(self, filename):
+    def _extract_docx(self, filename) -> list:
         document = zipfile.ZipFile(filename)
 
-        content = document.read("word/document.xml", pwd=None).decode()
-        regex = re.compile(r"<w:t>(.*?)\<\/w:t>")
-        matches = regex.findall(content)
-        print(matches)
-        return matches
+        xml_files = document.filelist
 
-    def _remove_file(self, file):
-        os.remove(file)
+        extracted_content = []
+
+        for xml_file in xml_files:
+            if xml_file.filename.find(".xml") >= 0:
+                content = document.read(xml_file, pwd=None).decode()
+                text_pieces = []
+
+                soup = BeautifulSoup(content, "xml")
+
+                if xml_file.filename == "word/document.xml":
+                    body = soup.document.body
+                elif xml_file.filename == "word/footer1.xml":
+                    body = soup.ftr
+                elif xml_file.filename == "word/header1.xml":
+                    body = soup.hdr
+                else:
+                    body = None
+
+                if body:
+                    text_pieces = [tag.string for tag in body.find_all("t")]
+
+                extracted_content += text_pieces
+
+        return extracted_content
 
     def _work_docx(self, docx_files):
         values = {}
 
         for file in docx_files:
             filename = os.path.basename(urlparse(file).path)
-            print(filename)
-            self._load_docx(file, filename)
+            # self._load_docx(file, filename)
             data = self._extract_docx(filename)
-            print(data)
             values.update({filename: {"content": data}})
-            self._remove_file(filename)
+            # os.remove(filename)
 
         return values
 
@@ -62,7 +79,5 @@ class ExtractFromFiles(MetadataBase):
         values = self._work_docx(docx_files=docx_files)
 
         content = {**values}
-
-        print(content)
 
         return content
