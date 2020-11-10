@@ -18,7 +18,7 @@ class MetadataTags(BaseModel):
     )
     decision: bool = Field(
         default=None,
-        description="The calculated probability that this metadatum is present in the website.",
+        description="A user friendly decision whether or not this metadatum is present in the website.",
     )
 
 
