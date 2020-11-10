@@ -7,6 +7,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from features.metadata_base import MetadataBase, MetadataData
+from lib.constants import VALUES
 
 
 class ExtractFromFiles(MetadataBase):
@@ -59,14 +60,14 @@ class ExtractFromFiles(MetadataBase):
         return content
 
     def _work_docx(self, docx_files):
-        values = {"values": []}
+        values = {VALUES: []}
 
         for file in docx_files:
             filename = os.path.basename(urlparse(file).path)
             self._load_docx(file, filename)
             content = self._extract_docx(filename)
             values.update({filename: content})
-            values["values"].append(filename)
+            values[VALUES].append(filename)
             os.remove(filename)
 
         return values

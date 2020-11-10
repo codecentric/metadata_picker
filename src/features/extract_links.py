@@ -3,6 +3,7 @@ import os
 from bs4 import BeautifulSoup
 
 from features.metadata_base import MetadataBase, MetadataData
+from lib.constants import VALUES
 
 
 class ExtractLinks(MetadataBase):
@@ -230,7 +231,7 @@ class ExtractLinks(MetadataBase):
         malicious_extensions = self.__extract_malicious_extensions(extensions)
 
         return {
-            "values": raw_links,
+            VALUES: raw_links,
             "images": image_links,
             "extensions": extensions,
             "malicious_extensions": malicious_extensions,
