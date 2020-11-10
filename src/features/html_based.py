@@ -1,4 +1,4 @@
-from features.metadata_base import MetadataBase
+from features.metadata_base import MetadataBase, ProbabilityDeterminationMethod
 
 
 class Advertisement(MetadataBase):
@@ -21,6 +21,9 @@ class Advertisement(MetadataBase):
         "https://github.com/easylist/easylist/blob/master/easylist/easylist_thirdparty_popup.txt",
     ]
     decision_threshold = 0
+    probability_determination_method = (
+        ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
+    )
 
 
 class EasyPrivacy(MetadataBase):
@@ -74,6 +77,9 @@ class FanboyAnnoyance(MetadataBase):
         "https://github.com/easylist/easylist/blob/master/fanboy-addon/fanboy_annoyance_thirdparty.txt",
     ]
     decision_threshold = 0
+    probability_determination_method = (
+        ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
+    )
 
 
 class FanboyNotification(MetadataBase):
@@ -87,6 +93,9 @@ class FanboyNotification(MetadataBase):
         "https://github.com/easylist/easylist/blob/master/fanboy-addon/fanboy_notifications_thirdparty.txt",
     ]
     decision_threshold = 0
+    probability_determination_method = (
+        ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
+    )
 
 
 class FanboySocialMedia(MetadataBase):

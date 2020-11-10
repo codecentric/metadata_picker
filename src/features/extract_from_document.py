@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
 
-from features.metadata_base import MetadataBase
+from features.metadata_base import MetadataBase, MetadataData
 
 
 class ExtractFromFiles(MetadataBase):
@@ -71,8 +71,8 @@ class ExtractFromFiles(MetadataBase):
 
         return values
 
-    def _start(self, html_content: str, header: dict) -> dict:
-        soup = self._create_html_soup(html_content)
+    def _start(self, metadata: MetadataData) -> dict:
+        soup = self._create_html_soup(metadata.html)
 
         raw_links = self._extract_raw_links(soup)
 
