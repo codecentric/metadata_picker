@@ -1,5 +1,5 @@
+import base64
 import os
-import re
 import zipfile
 from urllib.parse import urlparse
 
@@ -21,35 +21,42 @@ class ExtractFromFiles(MetadataBase):
 
         open(filename, "wb").write(result.content)
 
-    def _extract_docx(self, filename) -> list:
+    @staticmethod
+    def _extract_docx(filename) -> dict:
         document = zipfile.ZipFile(filename)
 
         xml_files = document.filelist
 
         extracted_content = []
+        images = {}
 
         for xml_file in xml_files:
             if xml_file.filename.find(".xml") >= 0:
                 content = document.read(xml_file, pwd=None).decode()
-                text_pieces = []
-
                 soup = BeautifulSoup(content, "xml")
 
+                body = None
                 if xml_file.filename == "word/document.xml":
                     body = soup.document.body
                 elif xml_file.filename == "word/footer1.xml":
                     body = soup.ftr
                 elif xml_file.filename == "word/header1.xml":
                     body = soup.hdr
-                else:
-                    body = None
 
+                text_pieces = []
                 if body:
                     text_pieces = [tag.string for tag in body.find_all("t")]
 
                 extracted_content += text_pieces
+            elif xml_file.filename.find("media") >= 0:
+                image = document.read(xml_file, pwd=None)
+                image = base64.b64encode(image).decode()
 
-        return extracted_content
+                images.update({xml_file.filename: image})
+
+        content = {"content": extracted_content, "images": images}
+
+        return content
 
     def _work_docx(self, docx_files):
         values = {}
@@ -57,8 +64,8 @@ class ExtractFromFiles(MetadataBase):
         for file in docx_files:
             filename = os.path.basename(urlparse(file).path)
             # self._load_docx(file, filename)
-            data = self._extract_docx(filename)
-            values.update({filename: {"content": data}})
+            content = self._extract_docx(filename)
+            values.update({filename: content})
             # os.remove(filename)
 
         return values
