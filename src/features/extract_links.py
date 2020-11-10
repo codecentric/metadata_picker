@@ -230,8 +230,8 @@ class ExtractLinks(MetadataBase):
         malicious_extensions = self.__extract_malicious_extensions(extensions)
 
         return {
+            "values": raw_links,
             "images": image_links,
             "extensions": extensions,
-            "raw_links": raw_links,
             "malicious_extensions": malicious_extensions,
         }

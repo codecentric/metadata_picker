@@ -154,6 +154,7 @@ class IFrameEmbeddable(MetadataBase):
     tag_list = ["X-Frame-Options"]
     key: str = "iframe_embeddable"
     evaluate_header = True
+    decision_threshold = 0
 
 
 class PopUp(MetadataBase):
@@ -166,3 +167,4 @@ class PopUp(MetadataBase):
         "interstitial",
         "Interstitial",
     ]
+    decision_threshold = 0

@@ -59,14 +59,15 @@ class ExtractFromFiles(MetadataBase):
         return content
 
     def _work_docx(self, docx_files):
-        values = {}
+        values = {"values": []}
 
         for file in docx_files:
             filename = os.path.basename(urlparse(file).path)
-            # self._load_docx(file, filename)
+            self._load_docx(file, filename)
             content = self._extract_docx(filename)
             values.update({filename: content})
-            # os.remove(filename)
+            values["values"].append(filename)
+            os.remove(filename)
 
         return values
 

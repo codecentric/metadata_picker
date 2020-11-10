@@ -17,6 +17,7 @@ class MetadataBase:
     urls: list = []
     comment_symbol: str = ""
     evaluate_header: bool = False
+    decision_threshold: float = -1
 
     def __init__(self, logger) -> None:
         self._logger = logger
@@ -26,16 +27,40 @@ class MetadataBase:
                 r"(?<!^)(?=[A-Z])", "_", self.__class__.__name__
             ).lower()
 
+    def _calculate_probability(self, values: dict) -> float:
+        probability = -1
+        if values and len(values) >= 1:
+            probability = 1.0
+        elif not values:
+            probability = 0
+
+        return probability
+
+    def _decide(self, probability: float) -> bool:
+        if self.decision_threshold == -1 or probability == -1:
+            decision = None
+        elif probability > self.decision_threshold:
+            decision = True
+        else:
+            decision = False
+        return decision
+
     def start(self, html_content: str = "", header=None) -> dict:
         if header is None:
             header = {}
         self._logger.info(f"Starting {self.__class__.__name__}")
         before = get_utc_now()
         values = self._start(html_content=html_content, header=header)
+
+        probability = self._calculate_probability(values=values["values"])
+        decision = self._decide(probability=probability)
+
         data = {
             self.key: {
                 "time_required": get_utc_now() - before,
                 **values,
+                "probability": probability,
+                "decision": decision,
             }
         }
         if self.tag_list_last_modified != "":
@@ -48,10 +73,12 @@ class MetadataBase:
         return data
 
     def _work_header(self, header):
+        values = []
         if len(self.tag_list) == 1:
-            values = (
-                header[self.tag_list[0]] if self.tag_list[0] in header else []
-            )
+            if self.tag_list[0] in header:
+                values = header[self.tag_list[0]]
+                if not isinstance(values, list):
+                    values = [values]
         else:
             values = [header[ele] for ele in self.tag_list if ele in header]
         return values
