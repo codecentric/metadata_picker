@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional
 
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
@@ -9,9 +9,17 @@ from lib.timing import get_utc_now
 
 
 class MetadataTags(BaseModel):
-    values: list = []
-    probability: float = -1
-    decision: bool = None
+    values: list = Field(
+        default=[], description="Raw values found by the metadata extractors."
+    )
+    probability: float = Field(
+        default=-1,
+        description="The calculated probability that this metadatum is present in the website.",
+    )
+    decision: bool = Field(
+        default=None,
+        description="The calculated probability that this metadatum is present in the website.",
+    )
 
 
 class ListTags(BaseModel):
@@ -53,15 +61,31 @@ class ExtractorTags(BaseModel):
 
 
 class Input(BaseModel):
-    url: str
-    html: str
-    headers: str
-    allow_list: Optional[ListTags] = None
+    url: str = Field(..., description="The base url of the scraped website.")
+    html: str = Field(
+        ..., description="Everything scraped from the website as text."
+    )
+    headers: str = Field(
+        ..., description="The response header interpretable as dict."
+    )
+    allow_list: Optional[ListTags] = Field(
+        default=None,
+        description="A list of key:bool pairs. "
+        "Any metadata key == True will be extracted. "
+        "If this list is not given, all values will be extracted.",
+    )
 
 
 class Output(BaseModel):
-    url: str
-    meta: Union[ExtractorTags, str]
+    url: str = Field(..., description="The base url of the scraped website.")
+    meta: ExtractorTags = Field(
+        default=None,
+        description="The extracted metadata.",
+    )
+    exception: str = Field(
+        default=None,
+        description="A description of the exception which caused the extraction to fail.",
+    )
 
 
 app = FastAPI(title="Metadata Extractor", version="0.1")
@@ -69,23 +93,18 @@ app.api_queue: ProcessToDaemonCommunication
 
 
 def _convert_dict_to_output_model(meta):
-    print("_convert_dict_to_output_model")
     out = ExtractorTags()
     extractor_keys = ExtractorTags.__fields__.keys()
     for key in extractor_keys:
-        if key in meta.keys():
-            print(meta[key])
-            if "values" in meta[key]:
-                out.__setattr__(
-                    key,
-                    MetadataTags(
-                        value=meta[key]["values"],
-                        probability=-1,
-                        decision=False,
-                    ),
-                )
-        else:
-            print(key, meta.keys())
+        if key in meta.keys() and "values" in meta[key]:
+            out.__setattr__(
+                key,
+                MetadataTags(
+                    value=meta[key]["values"],
+                    probability=-1,
+                    decision=False,
+                ),
+            )
     return out
 
 
@@ -103,7 +122,6 @@ def extract_meta(input_data: Input):
     meta_data: dict = app.api_queue.get_message(uuid)
 
     if meta_data:
-        print(meta_data)
         meta_data.update(
             {"time_until_complete": get_utc_now() - starting_extraction}
         )
@@ -111,8 +129,8 @@ def extract_meta(input_data: Input):
 
         out = Output(url=input_data.url, meta=meta_data)
     else:
-        meta_data = {"error_message": "No response from metadata extractor."}
-        out = Output(url=input_data.url, meta=meta_data)
+        message = "No response from metadata extractor."
+        out = Output(url=input_data.url, exception=message)
 
     return out
 
