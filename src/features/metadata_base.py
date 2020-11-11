@@ -38,12 +38,11 @@ class MetadataBase:
                 r"(?<!^)(?=[A-Z])", "_", self.__class__.__name__
             ).lower()
 
-    def _get_ratio_of_elements(self, values: list, html_content: str) -> float:
-        soup = self._create_html_soup(html_content)
-        raw_links = self._extract_raw_links(soup)
+    def _get_ratio_of_elements(self, website_data: WebsiteData) -> float:
+        values = website_data.values
 
-        if values and len(raw_links) > 0:
-            ratio = len(values) / len(raw_links)
+        if values and len(website_data.raw_links) > 0:
+            ratio = len(values) / len(website_data.raw_links)
         else:
             ratio = 0
         return round(ratio, 2)
@@ -55,7 +54,7 @@ class MetadataBase:
             == ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
         ):
             probability = self._get_ratio_of_elements(
-                values=website_data.values, html_content=website_data.html
+                website_data=website_data
             )
         elif (
             self.probability_determination_method
@@ -121,28 +120,23 @@ class MetadataBase:
         return values
 
     @staticmethod
-    def _create_html_soup(html_content: str) -> BeautifulSoup:
-        return BeautifulSoup(html_content, "html.parser")
-
-    @staticmethod
     def _extract_raw_links(soup: BeautifulSoup) -> list:
         return list({a["href"] for a in soup.find_all(href=True)})
 
-    def _work_html_content(self, html_content) -> list:
+    def _work_html_content(self, website_data: WebsiteData) -> list:
         if self.tag_list:
             if self.url.find("easylist") >= 0:
-                soup = self._create_html_soup(html_content)
-                raw_links = self._extract_raw_links(soup)
-
                 rules = adblockparser.AdblockRules(self.tag_list)
                 values = []
-                for url in raw_links:
+                for url in website_data.raw_links:
                     is_blocked = rules.should_block(url)
                     if is_blocked:
                         values.append(url)
             else:
                 values = [
-                    ele for ele in self.tag_list if html_content.find(ele) >= 0
+                    ele
+                    for ele in self.tag_list
+                    if website_data.html.find(ele) >= 0
                 ]
         else:
             values = []
@@ -152,7 +146,7 @@ class MetadataBase:
         if self.evaluate_header:
             values = self._work_header(website_data.headers)
         else:
-            values = self._work_html_content(website_data.html)
+            values = self._work_html_content(website_data)
         return {VALUES: values}
 
     def _download_multiple_tag_lists(self):

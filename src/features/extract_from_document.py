@@ -74,15 +74,14 @@ class ExtractFromFiles(MetadataBase):
         return values
 
     def _start(self, website_data: WebsiteData) -> dict:
-        soup = self._create_html_soup(website_data.html)
 
-        raw_links = self._extract_raw_links(soup)
-
-        file_extensions = [os.path.splitext(link)[-1] for link in raw_links]
+        file_extensions = [
+            os.path.splitext(link)[-1] for link in website_data.raw_links
+        ]
 
         docx_files = [
             file
-            for file, extension in zip(raw_links, file_extensions)
+            for file, extension in zip(website_data.raw_links, file_extensions)
             if extension == ".docx"
         ]
 

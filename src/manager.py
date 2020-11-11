@@ -1,6 +1,7 @@
 import logging
 import multiprocessing
 import os
+import signal
 import time
 from logging import handlers
 from queue import Empty
@@ -10,7 +11,6 @@ import uvicorn
 from app.api import app
 from app.communication import ProcessToDaemonCommunication
 from features.extract_from_document import ExtractFromFiles
-from features.extract_links import ExtractLinks
 from features.html_based import (
     Advertisement,
     AntiAdBlock,
@@ -27,14 +27,10 @@ from features.html_based import (
     Paywalls,
     PopUp,
 )
+from features.malicious_extensions import MaliciousExtensions
 from features.metadata_base import MetadataBase
-from features.website_manager import WebsiteData, WebsiteManager
-from lib.constants import (
-    LOGFILE_MANAGER,
-    MESSAGE_CONTENT,
-    MESSAGE_HEADERS,
-    MESSAGE_HTML,
-)
+from features.website_manager import WebsiteManager
+from lib.constants import LOGFILE_MANAGER, MESSAGE_HEADERS, MESSAGE_HTML
 from lib.settings import API_PORT, LOG_LEVEL, LOG_PATH
 from lib.timing import get_utc_now
 
@@ -71,7 +67,7 @@ class Manager:
         extractors = [
             Advertisement,
             EasyPrivacy,
-            ExtractLinks,
+            MaliciousExtensions,
             ExtractFromFiles,
             IETracker,
             Cookies,
@@ -136,6 +132,13 @@ class Manager:
         self._logger.addHandler(fh)
         self._logger.addHandler(error_handler)
 
+    def setup(self):
+        for metadata_extractor in self.metadata_extractors:
+            metadata_extractor: MetadataBase
+            metadata_extractor.setup()
+
+    # =========== LOOP ============
+
     def get_api_request(self):
         if self.api_to_manager_queue is not None:
             try:
@@ -147,10 +150,14 @@ class Manager:
             except Empty:
                 pass
 
-    def setup(self):
-        for metadata_extractor in self.metadata_extractors:
-            metadata_extractor: MetadataBase
-            metadata_extractor.setup()
+    def run(self):
+        signal.signal(signal.SIGINT, self._graceful_shutdown)
+        signal.signal(signal.SIGTERM, self._graceful_shutdown)
+
+        while self.run_loop:
+            self.get_api_request()
+            self._logger.info(f"Current time: {get_utc_now()}")
+            time.sleep(1)
 
     def _extract_meta_data(self):
         data = {}
@@ -160,14 +167,6 @@ class Manager:
 
             self._logger.debug(f"Resulting data: {data}")
         return data
-
-    # =========== LOOP ============
-    def run(self):
-
-        while self.run_loop:
-            self.get_api_request()
-            self._logger.info(f"Current time: {get_utc_now()}")
-            time.sleep(1)
 
     def handle_content(self, request):
 
@@ -198,6 +197,9 @@ class Manager:
             website_manager.reset()
 
             self.manager_to_api_queue.put({uuid: response})
+
+    def _graceful_shutdown(self, signum=None, frame=None):
+        self.run_loop = False
 
 
 def api_server(queue, return_queue):

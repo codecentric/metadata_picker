@@ -1,5 +1,8 @@
 import json
+import os
 from dataclasses import dataclass, field
+
+from bs4 import BeautifulSoup
 
 
 @dataclass
@@ -8,6 +11,10 @@ class WebsiteData:
     values: list = field(default_factory=list)
     headers: dict = field(default_factory=dict)
     raw_header: str = field(default_factory=str)
+    soup: BeautifulSoup = field(default_factory=BeautifulSoup)
+    raw_links: list = field(default_factory=list)
+    image_links: list = field(default_factory=list)
+    extensions: list = field(default_factory=list)
 
 
 class Singleton:
@@ -59,6 +66,35 @@ class WebsiteManager:
 
         if html_content != "" and self.website_data.html == "":
             self.website_data.html = html_content
+            self._create_html_soup()
+            self._extract_raw_links()
+            self._extract_images()
+            self._extract_extensions()
+
+    def _create_html_soup(self):
+        self.website_data.soup = BeautifulSoup(
+            self.website_data.html, "html.parser"
+        )
+
+    def _extract_raw_links(self):
+        self.website_data.raw_links = list(
+            {a["href"] for a in self.website_data.soup.find_all(href=True)}
+        )
+
+    def _extract_images(self) -> None:
+        self.website_data.image_links = [
+            image.attrs.get("src")
+            for image in self.website_data.soup.findAll("img")
+        ]
+
+    def _extract_extensions(self):
+        file_extensions = [
+            os.path.splitext(link)[-1]
+            for link in self.website_data.image_links
+        ]
+        self.website_data.extensions = [
+            x for x in list(set(file_extensions)) if x != ""
+        ]
 
     def _preprocess_header(self) -> None:
         header: str = self.website_data.raw_header
