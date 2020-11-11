@@ -1,21 +1,14 @@
 import re
 from collections import OrderedDict
-from dataclasses import dataclass, field
 from enum import Enum
 
 import adblockparser
 import requests
 from bs4 import BeautifulSoup
 
+from features.website_manager import WebsiteData, WebsiteManager
 from lib.constants import DECISION, PROBABILITY, VALUES
 from lib.timing import get_utc_now
-
-
-@dataclass
-class MetadataData:
-    html: str
-    values: list = field(default_factory=list)
-    headers: dict = field(default_factory=dict)
 
 
 class ProbabilityDeterminationMethod(Enum):
@@ -55,21 +48,23 @@ class MetadataBase:
             ratio = 0
         return round(ratio, 2)
 
-    def _calculate_probability(self, metadata: MetadataData) -> float:
+    def _calculate_probability(self, website_data: WebsiteData) -> float:
         probability = -1
         if (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
         ):
             probability = self._get_ratio_of_elements(
-                values=metadata.values, html_content=metadata.html
+                values=website_data.values, html_content=website_data.html
             )
         elif (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.SINGLE_OCCURRENCE
         ):
             probability = (
-                1 if (metadata.values and len(metadata.values) > 0) else 0
+                1
+                if (website_data.values and len(website_data.values) > 0)
+                else 0
             )
 
         return probability
@@ -83,19 +78,18 @@ class MetadataBase:
             decision = False
         return decision
 
-    def start(self, html_content: str = "", header=None) -> dict:
-        metadata = MetadataData(html=html_content)
-        if header is None:
-            header = {}
-        metadata.headers = header
-
+    def start(self) -> dict:
         self._logger.info(f"Starting {self.__class__.__name__}")
         before = get_utc_now()
-        values = self._start(metadata=metadata)
 
-        metadata.values = values[VALUES]
+        website_manager = WebsiteManager.get_instance()
+        website_data = website_manager.website_data
 
-        probability = self._calculate_probability(metadata=metadata)
+        values = self._start(website_data=website_data)
+
+        website_data.values = values[VALUES]
+
+        probability = self._calculate_probability(website_data=website_data)
         decision = self._decide(probability=probability)
 
         data = {
@@ -154,11 +148,11 @@ class MetadataBase:
             values = []
         return values
 
-    def _start(self, metadata: MetadataData) -> dict:
+    def _start(self, website_data: WebsiteData) -> dict:
         if self.evaluate_header:
-            values = self._work_header(metadata.headers)
+            values = self._work_header(website_data.headers)
         else:
-            values = self._work_html_content(metadata.html)
+            values = self._work_html_content(website_data.html)
         return {VALUES: values}
 
     def _download_multiple_tag_lists(self):

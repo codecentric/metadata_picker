@@ -1,4 +1,3 @@
-import json
 import logging
 import multiprocessing
 import os
@@ -29,6 +28,7 @@ from features.html_based import (
     PopUp,
 )
 from features.metadata_base import MetadataBase
+from features.website_manager import WebsiteData, WebsiteManager
 from lib.constants import (
     LOGFILE_MANAGER,
     MESSAGE_CONTENT,
@@ -152,12 +152,10 @@ class Manager:
             metadata_extractor: MetadataBase
             metadata_extractor.setup()
 
-    def _extract_meta_data(self, html_content: str, headers: dict):
+    def _extract_meta_data(self):
         data = {}
         for metadata_extractor in self.metadata_extractors:
-            extracted_metadata = metadata_extractor.start(
-                html_content, headers
-            )
+            extracted_metadata = metadata_extractor.start()
             data.update(extracted_metadata)
 
             self._logger.debug(f"Resulting data: {data}")
@@ -171,55 +169,34 @@ class Manager:
             self._logger.info(f"Current time: {get_utc_now()}")
             time.sleep(1)
 
-    @staticmethod
-    def _preprocess_header(header: str) -> dict:
-        header = (
-            header.replace("b'", '"')
-            .replace("/'", '"')
-            .replace("'", '"')
-            .replace('""', '"')
-            .replace('/"', "/")
-        )
-
-        idx = header.find('b"')
-        if idx >= 0 and header[idx - 1] == "[":
-            bracket_idx = header[idx:].find("]")
-            header = (
-                header[:idx]
-                + '"'
-                + header[idx + 2 : idx + bracket_idx - 2].replace('"', " ")
-                + header[idx + bracket_idx - 1 :]
-            )
-
-        header = json.loads(header)
-        return header
-
     def handle_content(self, request):
 
         self._logger.debug(f"request: {request}")
         for uuid, message in request.items():
             self._logger.debug(f"message: {message}")
-            # TODO A lot of information needs to be known here
-            html_content = message[MESSAGE_HTML]
-            header_content = self._preprocess_header(message[MESSAGE_HEADERS])
+
+            website_manager = WebsiteManager.get_instance()
+            website_manager.load_raw_data(
+                html_content=message[MESSAGE_HTML],
+                raw_header=message[MESSAGE_HEADERS],
+            )
 
             starting_extraction = get_utc_now()
-
             try:
-                meta_data = self._extract_meta_data(
-                    html_content, header_content
-                )
+                extracted_meta_data = self._extract_meta_data()
             except Exception as e:
                 self._logger.error(
                     f"Extracting metadata raised: '{e.args}'", exc_info=True
                 )
-                meta_data = {}
+                extracted_meta_data = {}
 
-            meta_data.update(
+            extracted_meta_data.update(
                 {"time_for_extraction": get_utc_now() - starting_extraction}
             )
 
-            response = meta_data
+            response = extracted_meta_data
+            website_manager.reset()
+
             self.manager_to_api_queue.put({uuid: response})
 
 
