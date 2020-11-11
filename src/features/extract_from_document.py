@@ -87,6 +87,4 @@ class ExtractFromFiles(MetadataBase):
 
         values = self._work_docx(docx_files=docx_files)
 
-        content = {**values}
-
-        return content
+        return {**values}

@@ -119,6 +119,18 @@ class WebsiteManager:
         header = json.loads(header)
         self.website_data.headers = header
 
+    def get_website_data_to_log(self) -> dict:
+        data = {}
+        data.update(
+            {
+                "raw_links": self.website_data.raw_links,
+                "image_links": self.website_data.image_links,
+                "extensions": self.website_data.extensions,
+            }
+        )
+
+        return data
+
     def reset(self) -> None:
         """
         Since the manager works on many websites consecutively, the website manager needs to be reset.

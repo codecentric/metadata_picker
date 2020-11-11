@@ -190,7 +190,10 @@ class Manager:
                 extracted_meta_data = {}
 
             extracted_meta_data.update(
-                {"time_for_extraction": get_utc_now() - starting_extraction}
+                {
+                    "time_for_extraction": get_utc_now() - starting_extraction,
+                    **website_manager.get_website_data_to_log(),
+                }
             )
 
             response = extracted_meta_data
