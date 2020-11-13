@@ -212,7 +212,7 @@ class Manager:
                 )
 
                 config_manager = ConfigManager.get_instance()
-                config_manager.load_host_config(
+                config_manager.top_level_domain = (
                     website_manager.website_data.top_level_domain
                 )
 
