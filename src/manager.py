@@ -37,6 +37,7 @@ from lib.constants import (
     MESSAGE_HEADERS,
     MESSAGE_HTML,
     MESSAGE_META,
+    MESSAGE_URL,
 )
 from lib.settings import API_PORT, LOG_LEVEL, LOG_PATH
 from lib.timing import get_utc_now
@@ -190,6 +191,7 @@ class Manager:
             else:
                 website_manager = WebsiteManager.get_instance()
                 website_manager.load_raw_data(
+                    url=message[MESSAGE_URL],
                     html_content=message[MESSAGE_HTML],
                     raw_header=message[MESSAGE_HEADERS],
                 )
