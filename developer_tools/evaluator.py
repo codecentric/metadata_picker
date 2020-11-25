@@ -43,7 +43,7 @@ def load_raw_data_and_save_to_dataframe():
         "cookies",
         "g_d_p_r",
     ]
-    row_names = ["values", "probability", "decision"]
+    row_names = ["values", "probability", "decision", "time_for_completion"]
     col_names = []
 
     for key in meta_feature_keys:
@@ -52,7 +52,9 @@ def load_raw_data_and_save_to_dataframe():
 
     col_names += ["time_until_complete", "time_for_extraction", "exception"]
 
+    print("col_names")
     print(col_names)
+    print("col_names end")
 
     data = pd.DataFrame(columns=col_names)
 
@@ -76,7 +78,7 @@ def load_raw_data_and_save_to_dataframe():
         row.append(elements["time_for_extraction"])
         row.append(elements["exception"])
         # print(row)
-        data.loc[:, url] = row
+        data.loc[url, :] = row
 
     data.to_csv(DATAFRAME)
 
@@ -101,7 +103,9 @@ def evaluator(want_details: bool = False):
     print(f"Loading data from {DATAFRAME}.")
     df = pd.read_csv(DATAFRAME, index_col=0)
     if want_details:
+        print("df.columns")
         print(df.columns)
+        print("df.columns end")
 
     if len(df) > 0:
         print("summary".center(80, "-"))
@@ -219,6 +223,28 @@ def evaluator(want_details: bool = False):
     print("Unique file extensions".center(120, "-"))
     print(file_extensions)
 
+    # extract time_for_completion
+    performance_columns = ["key", "average", "std"]
+    metadata_performance = pd.DataFrame({}, columns=performance_columns)
+    for column in df.columns:
+        if len(elements := column.split(".")) == 2:
+            key = elements[0]
+            parameter = elements[1]
+            if parameter == "time_for_completion":
+                values = df.loc[:, f"{key}.{parameter}"]
+
+                metadata_performance = metadata_performance.append(
+                    pd.Series(
+                        data={
+                            "key": key,
+                            "average": np.average(values),
+                            "std": np.std(values),
+                        },
+                        name=key,
+                    )
+                )
+    print(metadata_performance)
+
     # Plotting
     fig_width = 500
     fig_height = 400
@@ -246,9 +272,16 @@ def evaluator(want_details: bool = False):
         .interactive()
         .properties(width=fig_width, height=fig_height)
     )
-    (chart1 & chart3 | chart2).show()
+    chart4 = (
+        alt.Chart(metadata_performance, title="Time per metadatum")
+        .mark_circle(size=60)
+        .encode(x="key:O", y="average:Q")
+        .interactive()
+        .properties(width=fig_width, height=fig_height)
+    )
+    (chart1 & chart3 | chart2 & chart4).show()
 
 
 if __name__ == "__main__":
-    want_details = False
+    want_details = True
     evaluator(want_details)
