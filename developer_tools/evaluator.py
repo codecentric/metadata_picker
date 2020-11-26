@@ -194,7 +194,7 @@ def evaluator(want_details: bool = False):
         if want_details:
             print(ads)
 
-    # Host names
+    # Top level domains
     extractor = TLDExtract(cache_dir=False)
 
     df.insert(
@@ -203,7 +203,8 @@ def evaluator(want_details: bool = False):
         df.apply(lambda df_row: extractor(df_row.name).domain, axis=1),
     )
     print("Unique top level domains".center(120, "-"))
-    print(df.loc[:, "domain"].unique())
+    top_level_domains = df.loc[:, "domain"]
+    print(top_level_domains.unique())
 
     # Extensions
     extract_from_files_values = "extract_from_files.values"
@@ -218,30 +219,36 @@ def evaluator(want_details: bool = False):
     print(file_extensions)
 
     # extract time_for_completion
-    performance_columns = ["key", "average", "std"]
+    performance_columns = ["key", "average", "std", "domain"]
     metadata_performance = pd.DataFrame({}, columns=performance_columns)
     for column in df.columns:
         if len(elements := column.split(".")) == 2:
             key = elements[0]
             parameter = elements[1]
             if parameter == "time_for_completion":
-                values = df.loc[:, f"{key}.{parameter}"]
+                for host in top_level_domains.unique():
+                    mask = df.loc[:, "domain"] == host
+                    values = df.loc[mask, f"{key}.{parameter}"]
 
-                metadata_performance = metadata_performance.append(
-                    pd.Series(
-                        data={
-                            "key": key,
-                            "average": np.average(values),
-                            "std": np.std(values),
-                        },
-                        name=key,
+                    data = {
+                        "key": key,
+                        "average": np.nanmean(values),
+                        "std": np.nanstd(values),
+                        "min": np.nanmin(values),
+                        "max": np.nanmax(values),
+                        "domain": host,
+                    }
+
+                    metadata_performance = metadata_performance.append(
+                        pd.Series(
+                            data=data,
+                            name=key,
+                        )
                     )
-                )
-    print(metadata_performance)
 
     # Plotting
     fig_width = 500
-    fig_height = 400
+    fig_height = 300
 
     chart1 = (
         alt.Chart(df)
@@ -266,22 +273,62 @@ def evaluator(want_details: bool = False):
         .interactive()
         .properties(width=fig_width, height=fig_height)
     )
-    chart4 = (
-        alt.Chart(metadata_performance, title="Time per metadatum")
-        .mark_circle(size=60)
+
+    min_value = (
+        alt.Chart(metadata_performance)
+        .mark_line()
         .encode(
             x="key:O",
             y=alt.Y(
-                field="average",
+                field="min",
                 scale=alt.Scale(type="log"),
                 type="quantitative",
                 title="average [s]",
             ),
+            color=alt.Color("domain"),
+            strokeDash="domain",
         )
-        .interactive()
         .properties(width=fig_width, height=fig_height)
     )
-    (chart1 & chart3 | chart2 & chart4).show()
+    max_value = (
+        alt.Chart(metadata_performance)
+        .mark_line()
+        .encode(
+            x="key:O",
+            y=alt.Y(
+                field="max",
+                scale=alt.Scale(type="log"),
+                type="quantitative",
+                title="average [s]",
+            ),
+            color=alt.Color("domain"),
+            strokeDash="domain",
+        )
+        .properties(width=fig_width, height=fig_height)
+    )
+
+    performance_monitor = (
+        max_value
+        + min_value
+        + (
+            alt.Chart(metadata_performance, title="Time per metadatum")
+            .mark_circle(size=60)
+            .encode(
+                x="key:O",
+                y=alt.Y(
+                    field="average",
+                    scale=alt.Scale(type="log"),
+                    type="quantitative",
+                    title="average [s]",
+                ),
+                color=alt.Color("domain"),
+            )
+            .interactive()
+            .properties(width=fig_width, height=fig_height)
+        )
+    )
+
+    (chart1 & chart3 | chart2 & performance_monitor).show()
 
 
 if __name__ == "__main__":
