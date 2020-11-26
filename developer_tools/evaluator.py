@@ -275,7 +275,15 @@ def evaluator(want_details: bool = False):
     chart4 = (
         alt.Chart(metadata_performance, title="Time per metadatum")
         .mark_circle(size=60)
-        .encode(x="key:O", y="average:Q")
+        .encode(
+            x="key:O",
+            y=alt.Y(
+                field="average",
+                scale=alt.Scale(type="log"),
+                type="quantitative",
+                title="average [s]",
+            ),
+        )
         .interactive()
         .properties(width=fig_width, height=fig_height)
     )
