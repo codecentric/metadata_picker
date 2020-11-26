@@ -54,7 +54,6 @@ def load_raw_data_and_save_to_dataframe():
 
     print("col_names")
     print(col_names)
-    print("col_names end")
 
     data = pd.DataFrame(columns=col_names)
 
@@ -72,12 +71,11 @@ def load_raw_data_and_save_to_dataframe():
                     else:
                         row.append(None)
             else:
-                [row.append(None) for _ in row_names]
+                _ = [row.append(None) for _ in row_names]
 
         row.append(elements["time_until_complete"])
         row.append(elements["time_for_extraction"])
         row.append(elements["exception"])
-        # print(row)
         data.loc[url, :] = row
 
     data.to_csv(DATAFRAME)
@@ -103,9 +101,7 @@ def evaluator(want_details: bool = False):
     print(f"Loading data from {DATAFRAME}.")
     df = pd.read_csv(DATAFRAME, index_col=0)
     if want_details:
-        print("df.columns")
         print(df.columns)
-        print("df.columns end")
 
     if len(df) > 0:
         print("summary".center(80, "-"))
@@ -168,7 +164,7 @@ def evaluator(want_details: bool = False):
     cookies_df = df.apply(
         lambda df_row: regex_cookie_parameter(df_row[cookies_values]), axis=1
     ).tolist()
-    cookies_df = set([item for subl in cookies_df for item in subl])
+    cookies_df = set(item for subl in cookies_df for item in subl)
     print("Unique cookies".center(120, "-"))
     print(cookies_df)
 
@@ -179,7 +175,7 @@ def evaluator(want_details: bool = False):
         ),
         axis=1,
     ).tolist()
-    domains = set([item for subl in domains for item in subl if item != ""])
+    domains = set(item for subl in domains for item in subl if item != "")
     print("Unique domains".center(120, "-"))
     print(domains)
 
@@ -190,11 +186,9 @@ def evaluator(want_details: bool = False):
         ads = df.loc[:, f"{parameter}.values"].tolist()
         ads = [ad.split(", ") for ad in ads if isinstance(ad, str)]
         ads = set(
-            [
-                item.replace("'", "").replace("[", "").replace("]", "")
-                for sub in ads
-                for item in sub
-            ]
+            item.replace("'", "").replace("[", "").replace("]", "")
+            for sub in ads
+            for item in sub
         )
         print(f"{len(ads)} unique values for {parameter}".center(120, "-"))
         if want_details:
@@ -219,7 +213,7 @@ def evaluator(want_details: bool = False):
         else []
         for link in df.loc[:, extract_from_files_values]
     ]
-    file_extensions = set([x for x in file_extensions if x != [] and x != ""])
+    file_extensions = set(x for x in file_extensions if x not in ([], ""))
     print("Unique file extensions".center(120, "-"))
     print(file_extensions)
 
@@ -291,5 +285,5 @@ def evaluator(want_details: bool = False):
 
 
 if __name__ == "__main__":
-    want_details = True
-    evaluator(want_details)
+    wants_details = True
+    evaluator(wants_details)
