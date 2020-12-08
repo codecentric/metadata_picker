@@ -1,3 +1,4 @@
+import asyncio
 import os
 import re
 from collections import OrderedDict
@@ -33,6 +34,7 @@ class MetadataBase:
     probability_determination_method: ProbabilityDeterminationMethod = (
         ProbabilityDeterminationMethod.SINGLE_OCCURRENCE
     )
+    call_async: bool = False
 
     def __init__(self, logger) -> None:
         self._logger = logger
@@ -92,7 +94,13 @@ class MetadataBase:
         website_manager = WebsiteManager.get_instance()
         website_data = website_manager.website_data
 
-        values = self._start(website_data=website_data)
+        if self.call_async:
+            value = await asyncio.gather(
+                self._astart(website_data=website_data)
+            )
+            values = value[0]
+        else:
+            values = self._start(website_data=website_data)
 
         website_data.values = values[VALUES]
 
@@ -149,6 +157,9 @@ class MetadataBase:
         else:
             values = []
         return values
+
+    async def _astart(self, website_data: WebsiteData) -> dict:
+        return {VALUES: []}
 
     def _start(self, website_data: WebsiteData) -> dict:
         if self.evaluate_header:

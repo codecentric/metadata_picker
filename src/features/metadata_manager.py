@@ -79,28 +79,26 @@ class MetadataManager:
         self._setup_extractors()
 
     async def _extract_meta_data(
-            self, allow_list: dict, config_manager: ConfigManager
+        self, allow_list: dict, config_manager: ConfigManager
     ) -> dict:
         data = {}
         tasks = []
         for metadata_extractor in self.metadata_extractors:
             if allow_list[metadata_extractor.key]:
                 if (
-                        config_manager.is_host_predefined()
-                        and config_manager.is_metadata_predefined(
-                    metadata_extractor.key
-                )
+                    config_manager.is_host_predefined()
+                    and config_manager.is_metadata_predefined(
+                        metadata_extractor.key
+                    )
                 ):
                     extracted_metadata = (
                         config_manager.get_predefined_metadata(
                             metadata_extractor.key
                         )
                     )
+                    data.update(extracted_metadata)
                 else:
                     tasks.append(metadata_extractor.start())
-                    extracted_metadata = {}
-
-                data.update(extracted_metadata)
 
         extracted_metadata = await asyncio.gather(*tasks)
         [data.update(metadata) for metadata in extracted_metadata]

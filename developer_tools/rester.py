@@ -40,9 +40,9 @@ def rester():
     allow_list = {
         "advertisement": True,
         "easy_privacy": True,
-        "malicious_extensions": False,
-        "extracted_links": False,
-        "extract_from_files": False,
+        "malicious_extensions": True,
+        "extracted_links": True,
+        "extract_from_files": True,
         "internet_explorer_tracker": True,
         "cookies_in_html": True,
         "fanboy_annoyance": True,
@@ -54,11 +54,12 @@ def rester():
         "paywall": True,
         "content_security_policy": True,
         "iframe_embeddable": True,
-        "pop_up": False,
-        "reg_wall": False,
-        "log_in_out": False,
-        "accessibility": False,
-        "cookies": False,
+        "pop_up": True,
+        "reg_wall": True,
+        "log_in_out": True,
+        "accessibility": True,
+        "cookies": True,
+        "g_d_p_r": True,
     }
 
     extractor_url = "http://0.0.0.0:5057/extract_meta"
