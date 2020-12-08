@@ -85,7 +85,7 @@ class MetadataBase:
             decision = False
         return decision
 
-    def start(self) -> dict:
+    async def start(self) -> dict:
         self._logger.info(f"Starting {self.__class__.__name__}")
         before = get_utc_now()
 

@@ -1,3 +1,5 @@
+import asyncio
+
 from config_manager import ConfigManager
 from features.accessibility import Accessibility
 from features.cookies import Cookies
@@ -76,17 +78,18 @@ class MetadataManager:
         self._create_extractors()
         self._setup_extractors()
 
-    def _extract_meta_data(
-        self, allow_list: dict, config_manager: ConfigManager
+    async def _extract_meta_data(
+            self, allow_list: dict, config_manager: ConfigManager
     ) -> dict:
         data = {}
+        tasks = []
         for metadata_extractor in self.metadata_extractors:
             if allow_list[metadata_extractor.key]:
                 if (
-                    config_manager.is_host_predefined()
-                    and config_manager.is_metadata_predefined(
-                        metadata_extractor.key
-                    )
+                        config_manager.is_host_predefined()
+                        and config_manager.is_metadata_predefined(
+                    metadata_extractor.key
+                )
                 ):
                     extracted_metadata = (
                         config_manager.get_predefined_metadata(
@@ -94,9 +97,13 @@ class MetadataManager:
                         )
                     )
                 else:
-                    extracted_metadata = metadata_extractor.start()
+                    tasks.append(metadata_extractor.start())
+                    extracted_metadata = {}
 
                 data.update(extracted_metadata)
+
+        extracted_metadata = await asyncio.gather(*tasks)
+        [data.update(metadata) for metadata in extracted_metadata]
         return data
 
     def start(self, message: dict) -> dict:
@@ -111,8 +118,10 @@ class MetadataManager:
 
         starting_extraction = get_utc_now()
         try:
-            extracted_meta_data = self._extract_meta_data(
-                message[MESSAGE_ALLOW_LIST], config_manager
+            extracted_meta_data = asyncio.run(
+                self._extract_meta_data(
+                    message[MESSAGE_ALLOW_LIST], config_manager
+                )
             )
         except Exception as e:
             self._logger.exception(
