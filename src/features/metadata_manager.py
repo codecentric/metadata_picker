@@ -1,5 +1,7 @@
 import asyncio
 
+import uvloop
+
 from config_manager import ConfigManager
 from features.accessibility import Accessibility
 from features.cookies import Cookies
@@ -120,6 +122,7 @@ class MetadataManager:
 
         starting_extraction = get_utc_now()
         try:
+            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
             extracted_meta_data = asyncio.run(
                 self._extract_meta_data(
                     message[MESSAGE_ALLOW_LIST], config_manager
