@@ -2,6 +2,7 @@ import json
 import os
 from dataclasses import dataclass, field
 
+import requests
 from bs4 import BeautifulSoup
 from tldextract.tldextract import TLDExtract
 
@@ -53,6 +54,11 @@ class Singleton:
 class WebsiteManager:
     website_data: WebsiteData
 
+    SPLASH_URL = "http://localhost:8050"
+    SPLASH_HEADERS = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36"
+    }
+
     def __init__(self):
         super().__init__()
 
@@ -73,6 +79,11 @@ class WebsiteManager:
             self.website_data.raw_header = message[MESSAGE_HEADERS]
             self._preprocess_header()
 
+        if message[MESSAGE_HTML] == "":
+            response = self.get_html_and_har(self.website_data.url)
+            message[MESSAGE_HTML] = response[MESSAGE_HTML]
+            message[MESSAGE_HAR] = response[MESSAGE_HAR]
+
         if message[MESSAGE_HTML] != "" and self.website_data.html == "":
             self.website_data.html = message[MESSAGE_HTML].lower()
             self._create_html_soup()
@@ -82,6 +93,24 @@ class WebsiteManager:
 
         if message[MESSAGE_HAR] != "" and not self.website_data.har:
             self._load_har(message[MESSAGE_HAR])
+
+    def get_html_and_har(self, url):
+        splash_url = f"{self.SPLASH_URL}/render.json?url={url}&html={1}&iframes={1}&har={1}&response_body={1}&wait={1}"
+
+        headers = self.SPLASH_HEADERS
+        payload = {}
+        response = requests.get(
+            url=splash_url, headers=headers, params=payload
+        )
+
+        data = json.loads(response.content.decode("UTF-8"))
+        html = data["html"] if "html" in data else ""
+        har = str(json.dumps(data["har"]))
+
+        return {
+            MESSAGE_HTML: html,
+            MESSAGE_HAR: har,
+        }
 
     def _extract_host_name(self):
         extractor = TLDExtract(cache_dir=False)
