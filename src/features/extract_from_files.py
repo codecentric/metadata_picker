@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import os
 import zipfile
@@ -15,6 +16,8 @@ from lib.settings import RETURN_IMAGES_IN_METADATA
 
 
 class ExtractFromFiles(MetadataBase):
+    call_async = True
+
     def _download_file(self, file_url, filename):
         result = requests.get(file_url)
         if result.status_code != 200:
@@ -116,24 +119,36 @@ class ExtractFromFiles(MetadataBase):
         content = {"extracted_content": extracted_content, "images": images}
         return content
 
-    def _work_files(self, files):
+    async def _process_file(self, file) -> str:
+        filename = os.path.basename(urlparse(file).path)
+        extension = filename.split(".")[-1]
+        self._download_file(file, filename)
+
+        content = {"extracted_content": [], "images": {}}
+        if extension == "docx":
+            content = self._extract_docx(filename)
+        elif extension == "pdf":
+            content = self._extract_pdfs(filename)
+
+        os.remove(filename)
+
+        if len(content["extracted_content"]) > 0:
+            return filename
+        return ""
+
+    async def _work_files(self, files):
         values = {VALUES: []}
 
+        tasks = []
         for file in files:
-            filename = os.path.basename(urlparse(file).path)
-            extension = filename.split(".")[-1]
-            self._download_file(file, filename)
+            tasks.append(self._process_file(file))
 
-            content = {"extracted_content": [], "images": {}}
-            if extension == "docx":
-                content = self._extract_docx(filename)
-            elif extension == "pdf":
-                content = self._extract_pdfs(filename)
-
-            if len(content["extracted_content"]) > 0:
-                values[VALUES].append(filename)
-
-            os.remove(filename)
+        extractable_files = await asyncio.gather(*tasks)
+        [
+            values[VALUES].append(file)
+            for file in extractable_files
+            if file != ""
+        ]
 
         return values
 
@@ -151,10 +166,9 @@ class ExtractFromFiles(MetadataBase):
 
         return extractable_files
 
-    def _start(self, website_data: WebsiteData) -> dict:
+    async def _astart(self, website_data: WebsiteData) -> dict:
         extractable_files = self._get_extractable_files(website_data)
-
-        values = self._work_files(files=extractable_files)
+        values = await self._work_files(files=extractable_files)
         return {**values}
 
     def _calculate_probability(self, website_data: WebsiteData) -> float:
