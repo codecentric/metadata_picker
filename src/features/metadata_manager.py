@@ -79,7 +79,7 @@ class MetadataManager:
         self._setup_extractors()
 
     async def _extract_meta_data(
-            self, allow_list: dict, config_manager: ConfigManager
+        self, allow_list: dict, config_manager: ConfigManager
     ) -> dict:
         data = {}
         tasks = []
@@ -87,10 +87,10 @@ class MetadataManager:
             metadata_extractor: MetadataBase
             if allow_list[metadata_extractor.key]:
                 if (
-                        config_manager.is_host_predefined()
-                        and config_manager.is_metadata_predefined(
-                    metadata_extractor.key
-                )
+                    config_manager.is_host_predefined()
+                    and config_manager.is_metadata_predefined(
+                        metadata_extractor.key
+                    )
                 ):
                     extracted_metadata = (
                         config_manager.get_predefined_metadata(

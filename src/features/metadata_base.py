@@ -55,15 +55,15 @@ class MetadataBase:
     def _calculate_probability(self, website_data: WebsiteData) -> float:
         probability = -1
         if (
-                self.probability_determination_method
-                == ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
+            self.probability_determination_method
+            == ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
         ):
             probability = self._get_ratio_of_elements(
                 website_data=website_data
             )
         elif (
-                self.probability_determination_method
-                == ProbabilityDeterminationMethod.SINGLE_OCCURRENCE
+            self.probability_determination_method
+            == ProbabilityDeterminationMethod.SINGLE_OCCURRENCE
         ):
             probability = (
                 1
@@ -71,8 +71,8 @@ class MetadataBase:
                 else 0
             )
         elif (
-                self.probability_determination_method
-                == ProbabilityDeterminationMethod.FIRST_VALUE
+            self.probability_determination_method
+            == ProbabilityDeterminationMethod.FIRST_VALUE
         ):
             probability = website_data.values[0]
 
@@ -92,7 +92,9 @@ class MetadataBase:
         website_manager = WebsiteManager.get_instance()
         return website_manager.website_data
 
-    def _processing_values(self, values: dict, website_data: WebsiteData, before: float) -> dict:
+    def _processing_values(
+        self, values: dict, website_data: WebsiteData, before: float
+    ) -> dict:
         website_data.values = values[VALUES]
 
         probability = self._calculate_probability(website_data=website_data)
@@ -123,7 +125,9 @@ class MetadataBase:
 
         values = await self._astart(website_data=website_data)
 
-        data = self._processing_values(values=values, website_data=website_data, before=before)
+        data = self._processing_values(
+            values=values, website_data=website_data, before=before
+        )
         return data
 
     def start(self) -> dict:
@@ -134,7 +138,9 @@ class MetadataBase:
 
         values = self._start(website_data=website_data)
 
-        data = self._processing_values(values=values, website_data=website_data, before=before)
+        data = self._processing_values(
+            values=values, website_data=website_data, before=before
+        )
         return data
 
     def _work_header(self, header):
@@ -226,8 +232,8 @@ class MetadataBase:
                 self.tag_list_expires = int(match.group(1))
 
             if (
-                    self.tag_list_last_modified != ""
-                    and self.tag_list_expires != 0
+                self.tag_list_last_modified != ""
+                and self.tag_list_expires != 0
             ):
                 break
 
