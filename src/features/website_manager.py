@@ -81,7 +81,7 @@ class WebsiteManager:
             self._preprocess_header()
 
         if message[MESSAGE_HTML] == "":
-            response = self.get_html_and_har(self.website_data.url)
+            response = self._get_html_and_har(self.website_data.url)
             message[MESSAGE_HTML] = response[MESSAGE_HTML]
             message[MESSAGE_HAR] = response[MESSAGE_HAR]
 
@@ -95,7 +95,36 @@ class WebsiteManager:
         if message[MESSAGE_HAR] != "" and not self.website_data.har:
             self._load_har(message[MESSAGE_HAR])
 
-    def get_html_and_har(self, url):
+    def _extract_host_name(self):
+        extractor = TLDExtract(cache_dir=False)
+        self.website_data.top_level_domain = extractor(
+            url=self.website_data.url
+        ).domain
+
+    def _preprocess_header(self) -> None:
+        header: str = self.website_data.raw_header.lower()
+        header = (
+            header.replace("b'", '"')
+            .replace("/'", '"')
+            .replace("'", '"')
+            .replace('""', '"')
+            .replace('/"', "/")
+        )
+
+        idx = header.find('b"')
+        if idx >= 0 and header[idx - 1] == "[":
+            bracket_idx = header[idx:].find("]")
+            header = (
+                header[:idx]
+                + '"'
+                + header[idx + 2 : idx + bracket_idx - 2].replace('"', " ")
+                + header[idx + bracket_idx - 1 :]
+            )
+
+        header = json.loads(header)
+        self.website_data.headers = header
+
+    def _get_html_and_har(self, url):
         splash_url = (
             f"{self.SPLASH_URL}/render.json?url={url}&html={1}&iframes={1}"
             f"&har={1}&response_body={1}&wait={1}"
@@ -113,12 +142,6 @@ class WebsiteManager:
             MESSAGE_HTML: html,
             MESSAGE_HAR: har,
         }
-
-    def _extract_host_name(self):
-        extractor = TLDExtract(cache_dir=False)
-        self.website_data.top_level_domain = extractor(
-            url=self.website_data.url
-        ).domain
 
     def _create_html_soup(self):
         self.website_data.soup = BeautifulSoup(
@@ -144,29 +167,6 @@ class WebsiteManager:
         self.website_data.extensions = [
             x for x in list(set(file_extensions)) if x != ""
         ]
-
-    def _preprocess_header(self) -> None:
-        header: str = self.website_data.raw_header.lower()
-        header = (
-            header.replace("b'", '"')
-            .replace("/'", '"')
-            .replace("'", '"')
-            .replace('""', '"')
-            .replace('/"', "/")
-        )
-
-        idx = header.find('b"')
-        if idx >= 0 and header[idx - 1] == "[":
-            bracket_idx = header[idx:].find("]")
-            header = (
-                header[:idx]
-                + '"'
-                + header[idx + 2 : idx + bracket_idx - 2].replace('"', " ")
-                + header[idx + bracket_idx - 1 :]
-            )
-
-        header = json.loads(header)
-        self.website_data.headers = header
 
     def _load_har(self, har: str) -> None:
         self.website_data.har = json.loads(har)
