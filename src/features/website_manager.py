@@ -135,8 +135,12 @@ class WebsiteManager:
         )
 
         data = json.loads(response.content.decode("UTF-8"))
-        html = data["html"] if "html" in data else ""
-        har = str(json.dumps(data["har"]))
+        try:
+            html = data["html"]
+            har = str(json.dumps(data["har"]))
+        except KeyError:
+            html = ""
+            har = ""
 
         return {
             MESSAGE_HTML: html,
