@@ -56,7 +56,8 @@ class WebsiteManager:
 
     SPLASH_URL = "http://localhost:8050"
     SPLASH_HEADERS = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36"
     }
 
     def __init__(self):
@@ -95,12 +96,13 @@ class WebsiteManager:
             self._load_har(message[MESSAGE_HAR])
 
     def get_html_and_har(self, url):
-        splash_url = f"{self.SPLASH_URL}/render.json?url={url}&html={1}&iframes={1}&har={1}&response_body={1}&wait={1}"
+        splash_url = (
+            f"{self.SPLASH_URL}/render.json?url={url}&html={1}&iframes={1}"
+            f"&har={1}&response_body={1}&wait={1}"
+        )
 
-        headers = self.SPLASH_HEADERS
-        payload = {}
         response = requests.get(
-            url=splash_url, headers=headers, params=payload
+            url=splash_url, headers=self.SPLASH_HEADERS, params={}
         )
 
         data = json.loads(response.content.decode("UTF-8"))
