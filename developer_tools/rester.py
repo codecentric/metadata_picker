@@ -60,6 +60,7 @@ def rester():
         "accessibility": True,
         "cookies": True,
         "g_d_p_r": True,
+        "javascript": True,
     }
 
     extractor_url = "http://0.0.0.0:5057/extract_meta"

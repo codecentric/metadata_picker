@@ -5,7 +5,7 @@ import zipfile
 from urllib.parse import urlparse
 
 import PyPDF2
-import requests
+from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 from pdfminer.high_level import extract_text
 
@@ -18,14 +18,15 @@ from lib.settings import RETURN_IMAGES_IN_METADATA
 class ExtractFromFiles(MetadataBase):
     call_async = True
 
-    def _download_file(self, file_url, filename):
-        result = requests.get(file_url)
-        if result.status_code != 200:
+    async def _download_file(
+        self, file_url, filename, session: ClientSession
+    ) -> None:
+        result = await session.request(method="GET", url=file_url)
+        if result.status != 200:
             self._logger.warning(
-                f"Downloading tag list from '{file_url}' yielded status code '{result.status_code}'."
+                f"Downloading tag list from '{file_url}' yielded status code '{result.status}'."
             )
-
-        open(filename, "wb").write(result.content)
+        open(filename, "wb").write(await result.read())
 
     @staticmethod
     def _extract_docx(filename) -> dict:
@@ -119,10 +120,10 @@ class ExtractFromFiles(MetadataBase):
         content = {"extracted_content": extracted_content, "images": images}
         return content
 
-    async def _process_file(self, file) -> str:
+    async def _process_file(self, file, session: ClientSession) -> str:
         filename = os.path.basename(urlparse(file).path)
         extension = filename.split(".")[-1]
-        self._download_file(file, filename)
+        await self._download_file(file, filename, session)
 
         content = {"extracted_content": [], "images": {}}
         if extension == "docx":
@@ -140,10 +141,12 @@ class ExtractFromFiles(MetadataBase):
         values = {VALUES: []}
 
         tasks = []
-        for file in files:
-            tasks.append(self._process_file(file))
 
-        extractable_files = await asyncio.gather(*tasks)
+        async with ClientSession() as session:
+            for file in files:
+                tasks.append(self._process_file(file, session))
+            extractable_files = await asyncio.gather(*tasks)
+
         [
             values[VALUES].append(file)
             for file in extractable_files
