@@ -29,15 +29,16 @@ class Accessibility(MetadataBase):
             "category": "accessibility",
             "strategy": strategy,
         }
-        pagespeed_url = "https://accessibility:5058/accessibility"
+        pagespeed_url = "http://accessibility:5058/accessibility"
 
-        process = await session.request(method="GET", url=pagespeed_url)
+        process = await session.get(url=pagespeed_url, timeout=60)
+        session.get()
         score = await process.text()
 
         return score
 
     async def _astart(self, website_data: WebsiteData) -> dict:
-        async with ClientSession() as session:
+        async with ClientSession(trust_env=True) as session:
             score = await asyncio.gather(
                 self._execute_api_call(
                     website_data=website_data,

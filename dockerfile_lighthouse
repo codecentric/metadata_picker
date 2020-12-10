@@ -23,19 +23,16 @@ RUN apt-get update || : && \
     apt-get install python3-pip -y
 # RUN apt-get install openssl-dev -y
 
+RUN apt-get install curl -y
+
 COPY requirements.txt requirements.txt
 RUN pip3 install --no-cache-dir -r requirements.txt
-
-# some place we can mount and view lighthouse reports
-VOLUME /home/chrome/reports
-WORKDIR /home/chrome/reports
 
 # Run Chrome non-privileged
 USER chrome
 
 ENV CHROME_FLAGS="--headless --disable-gpu --no-sandbox"
 
-VOLUME /home/chrome/reports
 WORKDIR /home/chrome
 
 COPY src/lighthouse/api.py .
