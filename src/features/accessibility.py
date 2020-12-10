@@ -30,25 +30,26 @@ class Accessibility(MetadataBase):
         ]
 
         cmd = [
-            f"docker run --rm femtopixel/google-lighthouse "
-            f"{website_data.url} --emulated-form-factor={strategy} --output=json --quiet"
+            "docker",
+            "run",
+            "femtopixel/google-lighthouse",
+            f"{website_data.url}",
+            f"--emulated-form-factor={strategy}",
+            "--output=json",
+            "--quiet",
         ]
-        print("cmd: ", cmd)
+
         p = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            shell=True,
         )
 
-        output = ""
+        output = []
 
-        before = time.perf_counter()
         for line in iter(p.stdout.readline, b""):
-            output += line.decode().replace("\n", "")
-        after = time.perf_counter()
-        print("output:", output)
-        print(f"Total time needed in series: {after - before}")
+            output.append(line.decode())
+        output = "".join(output)
 
         try:
             result = json.loads(output)
