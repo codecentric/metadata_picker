@@ -4,6 +4,8 @@ import subprocess
 import time
 from json import JSONDecodeError
 
+from aiohttp import ClientSession
+
 from features.metadata_base import MetadataBase, ProbabilityDeterminationMethod
 from features.website_manager import WebsiteData
 from lib.constants import VALUES
@@ -19,6 +21,7 @@ class Accessibility(MetadataBase):
     async def _execute_api_call(
         self,
         website_data: WebsiteData,
+        session: ClientSession,
         strategy: str = "desktop",
     ):
         _categories = [
@@ -29,27 +32,24 @@ class Accessibility(MetadataBase):
             "best-practices",
         ]
 
-        cmd = [
-            "docker",
-            "run",
-            "femtopixel/google-lighthouse",
-            f"{website_data.url}",
-            f"--emulated-form-factor={strategy}",
-            "--output=json",
-            "--quiet",
+        _categories = [
+            "accessibility",
+            "performance",
+            "seo",
+            "pwa",
+            "best-practices",
         ]
+        params = {
+            "url": website_data.url,
+            "category": _categories,
+            "strategy": strategy,
+        }
+        pagespeed_url = "https://accessibility:5080/accessibility"
 
-        p = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+        process = await session.request(
+            method="GET", url=pagespeed_url, params=params
         )
-
-        output = []
-
-        for line in iter(p.stdout.readline, b""):
-            output.append(line.decode())
-        output = "".join(output)
+        output = await process.text()
 
         try:
             result = json.loads(output)
@@ -80,15 +80,18 @@ class Accessibility(MetadataBase):
         return score
 
     async def _astart(self, website_data: WebsiteData) -> dict:
-        score = await asyncio.gather(
-            self._execute_api_call(
-                website_data=website_data,
-                strategy="desktop",
-            ),
-            self._execute_api_call(
-                website_data=website_data,
-                strategy="mobile",
-            ),
-        )
+        with ClientSession() as session:
+            score = await asyncio.gather(
+                self._execute_api_call(
+                    website_data=website_data,
+                    session=session,
+                    strategy="desktop",
+                ),
+                self._execute_api_call(
+                    website_data=website_data,
+                    session=session,
+                    strategy="mobile",
+                ),
+            )
         score = [element for sublist in score for element in sublist]
         return {VALUES: score}
