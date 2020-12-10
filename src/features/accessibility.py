@@ -24,74 +24,31 @@ class Accessibility(MetadataBase):
         session: ClientSession,
         strategy: str = "desktop",
     ):
-        _categories = [
-            "accessibility",
-            "performance",
-            "seo",
-            "pwa",
-            "best-practices",
-        ]
-
-        _categories = [
-            "accessibility",
-            "performance",
-            "seo",
-            "pwa",
-            "best-practices",
-        ]
         params = {
             "url": website_data.url,
-            "category": _categories,
+            "category": "accessibility",
             "strategy": strategy,
         }
-        pagespeed_url = "https://accessibility:5080/accessibility"
+        pagespeed_url = "https://accessibility:5058/accessibility"
 
-        process = await session.request(
-            method="GET", url=pagespeed_url, params=params
-        )
-        output = await process.text()
-
-        try:
-            result = json.loads(output)
-        except JSONDecodeError:
-            self._logger.exception(
-                f"JSONDecodeError error when accessing PageSpeedOnline result for {website_data.url}."
-            )
-            result = {}
-
-        try:
-            if "runtimeError" in result.keys():
-                self._logger.error(
-                    f"{result['runtimeError']['code']}: {result['runtimeError']['message']}"
-                )
-                score = [-1]
-            else:
-                score = [
-                    result["categories"][score_key]["score"]
-                    for score_key in _categories
-                ]
-        except KeyError:
-            self._logger.exception(
-                f"Key error when accessing PageSpeedOnline result for {website_data.url}. "
-                f"Returns {result}"
-            )
-            score = [-1]
+        process = await session.request(method="GET", url=pagespeed_url)
+        score = await process.text()
 
         return score
 
     async def _astart(self, website_data: WebsiteData) -> dict:
-        with ClientSession() as session:
+        async with ClientSession() as session:
             score = await asyncio.gather(
                 self._execute_api_call(
                     website_data=website_data,
                     session=session,
                     strategy="desktop",
                 ),
-                self._execute_api_call(
-                    website_data=website_data,
-                    session=session,
-                    strategy="mobile",
-                ),
+                # self._execute_api_call(
+                #     website_data=website_data,
+                #     session=session,
+                #     strategy="mobile",
+                # ),
             )
         score = [element for sublist in score for element in sublist]
         return {VALUES: score}
