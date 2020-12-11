@@ -23,7 +23,7 @@ class Accessibility(MetadataBase):
         website_data: WebsiteData,
         session: ClientSession,
         strategy: str = "desktop",
-    ):
+    ) -> list:
         params = {
             "url": website_data.url,
             "category": "accessibility",
@@ -32,8 +32,12 @@ class Accessibility(MetadataBase):
         pagespeed_url = "http://accessibility:5058/accessibility"
 
         process = await session.get(url=pagespeed_url, timeout=60)
-        session.get()
-        score = await process.text()
+
+        score_text = await process.text()
+        try:
+            score = [float(score_text)]
+        except ValueError:
+            score = [-1]
 
         return score
 
