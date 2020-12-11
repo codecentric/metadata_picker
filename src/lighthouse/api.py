@@ -3,23 +3,44 @@ import subprocess
 
 import uvicorn as uvicorn
 from fastapi import FastAPI
+from pydantic import BaseModel, Field
 
 app = FastAPI(title="Lighthouse Extractor", version="0.1")
 
 API_PORT = 5058
 
 
-@app.get("/accessibility")
-def accessibility():
-    url = "https://www.google.com"
-    strategy = "mobile"
-    category = "accessibility"
+class Output(BaseModel):
+    score: float = Field(
+        default=-1,
+        description="The accessibility score.",
+    )
+
+
+class Input(BaseModel):
+    url: str = Field(..., description="The base url of the scraped website.")
+    strategy: str = Field(
+        default="desktop",
+        description="Whether to use mobile or desktop.",
+    )
+    category: str = Field(
+        default="accessibility",
+        description="Which category to evaluate. Only one for now",
+    )
+
+
+@app.get("/accessibility", response_model=Output)
+def accessibility(input_data: Input):
+    url = input_data.url
+    strategy = input_data.strategy
+    category = input_data.category
     cmd = [
-        f"lighthouse",
+        "lighthouse",
         url,
         "--enable-error-reporting",
         "--chrome-flags='--headless --no-sandbox --disable-gpu'",
         f"--emulated-form-factor={strategy}",
+        f"--only-categories={category}",
         "--output=json",
         "--quiet",
     ]
@@ -30,22 +51,22 @@ def accessibility():
         stderr=subprocess.STDOUT,
     )
 
-    output = []
+    std_out = []
 
     for line in iter(p.stdout.readline, b""):
-        output.append(line.decode())
-    output = json.loads("".join(output))
+        std_out.append(line.decode())
+    std_out = json.loads("".join(std_out))
 
+    output = Output()
     try:
-        if "runtimeError" in output.keys():
-            score = [-1]
+        if "runtimeError" in std_out.keys():
+            output.score = [-1]
         else:
-            score = output["categories"][category]["score"]
+            output.score = std_out["categories"][category]["score"]
     except KeyError:
-        print(output)
-        score = [-1]
+        output.score = [-1]
 
-    return score
+    return output
 
 
 @app.get("/_ping")

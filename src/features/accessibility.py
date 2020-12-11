@@ -31,12 +31,14 @@ class Accessibility(MetadataBase):
         }
         pagespeed_url = "http://accessibility:5058/accessibility"
 
-        process = await session.get(url=pagespeed_url, timeout=60)
+        process = await session.get(url=pagespeed_url, timeout=60, json=params)
 
         score_text = await process.text()
+
         try:
-            score = [float(score_text)]
-        except ValueError:
+            score = [float(json.loads(score_text)["score"])]
+        except (KeyError, ValueError, TypeError):
+            self._logger.exception(f"Score output was: '{score_text}'")
             score = [-1]
 
         return score
@@ -49,11 +51,11 @@ class Accessibility(MetadataBase):
                     session=session,
                     strategy="desktop",
                 ),
-                # self._execute_api_call(
-                #     website_data=website_data,
-                #     session=session,
-                #     strategy="mobile",
-                # ),
+                self._execute_api_call(
+                    website_data=website_data,
+                    session=session,
+                    strategy="mobile",
+                ),
             )
         score = [element for sublist in score for element in sublist]
         return {VALUES: score}
