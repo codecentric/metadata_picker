@@ -5,6 +5,8 @@ import uvicorn as uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
+from lib.constants import ACCESSIBILITY, DESKTOP, SCORE
+
 app = FastAPI(title="Lighthouse Extractor", version="0.1")
 
 API_PORT = 5058
@@ -20,11 +22,11 @@ class Output(BaseModel):
 class Input(BaseModel):
     url: str = Field(..., description="The base url of the scraped website.")
     strategy: str = Field(
-        default="desktop",
+        default=DESKTOP,
         description="Whether to use mobile or desktop.",
     )
     category: str = Field(
-        default="accessibility",
+        default=ACCESSIBILITY,
         description="Which category to evaluate. Only one for now",
     )
 
@@ -62,7 +64,7 @@ def accessibility(input_data: Input):
         if "runtimeError" in std_out.keys():
             output.score = [-1]
         else:
-            output.score = std_out["categories"][category]["score"]
+            output.score = std_out["categories"][category][SCORE]
     except KeyError:
         output.score = [-1]
 
