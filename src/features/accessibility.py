@@ -44,7 +44,7 @@ class Accessibility(MetadataBase):
         return score
 
     async def _astart(self, website_data: WebsiteData) -> dict:
-        async with ClientSession(trust_env=True) as session:
+        async with ClientSession() as session:
             score = await asyncio.gather(
                 self._execute_api_call(
                     website_data=website_data,
