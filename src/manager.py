@@ -1,7 +1,6 @@
 import cProfile
 import multiprocessing
 import signal
-import time
 from queue import Empty
 
 import uvicorn
@@ -9,7 +8,6 @@ import uvicorn
 from app.api import app
 from app.communication import ProcessToDaemonCommunication
 from features.metadata_manager import MetadataManager
-from lib.constants import MESSAGE_EXCEPTION, MESSAGE_HTML, MESSAGE_META
 from lib.logger import create_logger
 from lib.settings import API_PORT, WANT_PROFILING
 from lib.timing import get_utc_now
@@ -57,7 +55,7 @@ class Manager:
 
     def get_api_request(self):
         try:
-            request = self.api_to_manager_queue.get(block=False, timeout=0.1)
+            request = self.api_to_manager_queue.get(block=True, timeout=None)
             if isinstance(request, dict):
                 self.handle_content(request)
         except Empty:
@@ -74,7 +72,6 @@ class Manager:
         while self.run_loop:
             self.get_api_request()
             self._logger.info(f"Current time: {get_utc_now()}")
-            time.sleep(1)
 
     def _graceful_shutdown(self, signum=None, frame=None):
         self.run_loop = False
