@@ -126,17 +126,21 @@ class MetadataManager:
                 )
             )
         except MetadataBaseException as e:
+            exception = f"Extracting metadata raised: '{e.args}'"
             self._logger.exception(
-                f"Extracting metadata raised: '{e.args}'",
+                exception,
                 exc_info=True,
             )
-            extracted_meta_data = {}
+            extracted_meta_data = {"exception": exception}
         except Exception as e:
+            exception = (
+                f"Unknown exception from extracting metadata: '{e.args}'"
+            )
             self._logger.exception(
-                f"Unknown exception from extracting metadata: '{e.args}'",
+                exception,
                 exc_info=True,
             )
-            extracted_meta_data = {}
+            extracted_meta_data = {"exception": exception}
 
         extracted_meta_data.update(
             {
