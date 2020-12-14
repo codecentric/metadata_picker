@@ -21,6 +21,12 @@ class ProbabilityDeterminationMethod(Enum):
     FIRST_VALUE = 3
 
 
+class MetadataBaseException(Exception):
+    """Base class for exceptions coming from a metadata class."""
+
+    pass
+
+
 class MetadataBase:
     tag_list: list = []
     tag_list_last_modified = ""

@@ -25,7 +25,7 @@ from features.html_based import (
 )
 from features.javascript import Javascript
 from features.malicious_extensions import MaliciousExtensions
-from features.metadata_base import MetadataBase
+from features.metadata_base import MetadataBase, MetadataBaseException
 from features.website_manager import Singleton, WebsiteManager
 from lib.constants import MESSAGE_ALLOW_LIST
 from lib.logger import create_logger
@@ -125,9 +125,15 @@ class MetadataManager:
                     message[MESSAGE_ALLOW_LIST], config_manager
                 )
             )
-        except Exception as e:
+        except MetadataBaseException as e:
             self._logger.exception(
                 f"Extracting metadata raised: '{e.args}'",
+                exc_info=True,
+            )
+            extracted_meta_data = {}
+        except Exception as e:
+            self._logger.exception(
+                f"Unknown exception from extracting metadata: '{e.args}'",
                 exc_info=True,
             )
             extracted_meta_data = {}
