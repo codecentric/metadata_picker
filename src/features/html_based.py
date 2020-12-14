@@ -1,4 +1,8 @@
-from features.metadata_base import MetadataBase, ProbabilityDeterminationMethod
+from features.metadata_base import (
+    ExtractionMethod,
+    MetadataBase,
+    ProbabilityDeterminationMethod,
+)
 
 
 class Advertisement(MetadataBase):
@@ -24,6 +28,7 @@ class Advertisement(MetadataBase):
     probability_determination_method = (
         ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
     )
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class EasyPrivacy(MetadataBase):
@@ -40,6 +45,7 @@ class EasyPrivacy(MetadataBase):
         "https://github.com/easylist/easylist/blob/master/easyprivacy/easyprivacy_thirdparty_international.txt",
     ]
     decision_threshold = 0
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class IETracker(MetadataBase):
@@ -47,6 +53,7 @@ class IETracker(MetadataBase):
     key: str = "internet_explorer_tracker"
     comment_symbol = "#"
     decision_threshold = 0
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class CookiesInHtml(MetadataBase):
@@ -63,6 +70,7 @@ class CookiesInHtml(MetadataBase):
         "https://github.com/easylist/easylist/blob/master/easylist_cookie/easylist_cookie_thirdparty.txt",
     ]
     decision_threshold = 0
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class FanboyAnnoyance(MetadataBase):
@@ -80,6 +88,7 @@ class FanboyAnnoyance(MetadataBase):
     probability_determination_method = (
         ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
     )
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class FanboyNotification(MetadataBase):
@@ -96,6 +105,7 @@ class FanboyNotification(MetadataBase):
     probability_determination_method = (
         ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
     )
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class FanboySocialMedia(MetadataBase):
@@ -111,6 +121,7 @@ class FanboySocialMedia(MetadataBase):
         "https://github.com/easylist/easylist/blob/master/fanboy-addon/fanboy_social_thirdparty.txt",
     ]
     decision_threshold = 0
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class AntiAdBlock(MetadataBase):
@@ -121,6 +132,7 @@ class AntiAdBlock(MetadataBase):
     ]
     key: str = "anti_adblock"
     decision_threshold = 0
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class EasylistGermany(MetadataBase):
@@ -142,6 +154,7 @@ class EasylistGermany(MetadataBase):
         "https://github.com/easylist/easylistgermany/blob/master/easylistgermany/easylistgermany_thirdparty_popup.txt",
     ]
     decision_threshold = 0
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class EasylistAdult(MetadataBase):
@@ -157,6 +170,7 @@ class EasylistAdult(MetadataBase):
         "https://github.com/easylist/easylist/blob/master/easylist_adult/adult_thirdparty_popup.txt",
     ]
     decision_threshold = 0
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class Paywalls(MetadataBase):

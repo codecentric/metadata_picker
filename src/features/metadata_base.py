@@ -3,11 +3,9 @@ import os
 import re
 from collections import OrderedDict
 from enum import Enum
-from itertools import chain
 from urllib.parse import urlparse
 
 import adblockparser
-import requests
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
@@ -21,6 +19,11 @@ class ProbabilityDeterminationMethod(Enum):
     NUMBER_OF_ELEMENTS = 1
     SINGLE_OCCURRENCE = 2
     FIRST_VALUE = 3
+
+
+class ExtractionMethod(Enum):
+    MATCH_DIRECTLY = 1
+    USE_ADBLOCK_PARSER = 2
 
 
 class MetadataBaseException(Exception):
@@ -42,7 +45,9 @@ class MetadataBase:
     probability_determination_method: ProbabilityDeterminationMethod = (
         ProbabilityDeterminationMethod.SINGLE_OCCURRENCE
     )
+    extraction_method: ExtractionMethod = ExtractionMethod.MATCH_DIRECTLY
     call_async: bool = False
+    match_rules = None
 
     def __init__(self, logger) -> None:
         self._logger = logger
@@ -168,25 +173,26 @@ class MetadataBase:
         return list({a["href"] for a in soup.find_all(href=True)})
 
     def _work_html_content(self, website_data: WebsiteData) -> list:
+        values = []
         if self.tag_list:
-            if self.url.find("easylist") >= 0:
-                rules = adblockparser.AdblockRules(self.tag_list)
-                values = []
-                for url in website_data.raw_links:
-                    is_blocked = rules.should_block(url)
-                    if is_blocked:
-                        values.append(url)
-            else:
+            if self.extraction_method == ExtractionMethod.MATCH_DIRECTLY:
                 values = [
                     ele
                     for ele in self.tag_list
                     if website_data.html.find(ele) >= 0
                 ]
-        else:
-            values = []
+            elif self.extraction_method == ExtractionMethod.USE_ADBLOCK_PARSER:
+                for url in website_data.raw_links:
+                    if self.match_rules.should_block(url):
+                        values.append(url)
         return values
 
     async def _astart(self, website_data: WebsiteData) -> dict:
+        """
+        Intentionally left empty to force user to implement the respective function in the inheriting class.
+        :param website_data:
+        :return:
+        """
         return {VALUES: []}
 
     def _start(self, website_data: WebsiteData) -> dict:
@@ -285,3 +291,5 @@ class MetadataBase:
         if self.tag_list:
             self._extract_date_from_list()
             self._prepare_tag_list()
+            if self.extraction_method == ExtractionMethod.USE_ADBLOCK_PARSER:
+                self.match_rules = adblockparser.AdblockRules(self.tag_list)
