@@ -19,6 +19,5 @@ def metadata_manager():
 
 
 def test_init(metadata_manager: MetadataManager):
-    print(test_init)
     assert isinstance(metadata_manager._logger, Logger)
     assert len(metadata_manager.metadata_extractors) == 22
