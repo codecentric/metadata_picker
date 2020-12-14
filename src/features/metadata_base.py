@@ -81,6 +81,7 @@ class MetadataBase:
         elif (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.FIRST_VALUE
+            and len(website_data.values) >= 1
         ):
             probability = website_data.values[0]
 
