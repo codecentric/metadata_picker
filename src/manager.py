@@ -43,7 +43,7 @@ class Manager:
     # =========== LOOP ============
     def handle_content(self, request):
 
-        self._logger.debug(f"request: {request}")
+        self._logger.info(f"Received request: {request}")
         for uuid, message in request.items():
             self._logger.debug(f"message: {message}")
 
