@@ -1,4 +1,3 @@
-import asyncio
 import os
 import re
 from collections import OrderedDict
