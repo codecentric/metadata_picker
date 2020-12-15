@@ -1,4 +1,6 @@
 import asyncio
+import multiprocessing
+import time
 
 from features.accessibility import Accessibility
 from features.config_manager import ConfigManager
@@ -32,20 +34,21 @@ from lib.logger import create_logger
 from lib.timing import get_utc_now
 
 
+def _create_and_setup(extractor_class) -> MetadataBase:
+    extractor: MetadataBase = extractor_class(None)
+    extractor.setup()
+    return extractor
+
+
 @Singleton
 class MetadataManager:
     metadata_extractors: list = []
 
     def __init__(self):
         self._logger = create_logger()
-        asyncio.run(self._create_extractors())
+        self._create_extractors()
 
-    async def _async_create_and_setup(self, extractor_class) -> MetadataBase:
-        extractor: MetadataBase = extractor_class(self._logger)
-        await extractor.setup()
-        return extractor
-
-    async def _create_extractors(self) -> None:
+    def _create_extractors(self) -> None:
 
         extractors = [
             Advertisement,
@@ -72,17 +75,15 @@ class MetadataManager:
             Javascript,
         ]
 
-        tasks = []
-        for metadata_extractor in extractors:
-            tasks.append(self._async_create_and_setup(metadata_extractor))
-
-        self.metadata_extractors = await asyncio.gather(*tasks)
+        pool = multiprocessing.Pool(processes=6)
+        self.metadata_extractors = pool.map(_create_and_setup, extractors)
 
     async def _extract_meta_data(
         self, allow_list: dict, config_manager: ConfigManager
     ) -> dict:
         data = {}
         tasks = []
+
         for metadata_extractor in self.metadata_extractors:
             metadata_extractor: MetadataBase
             if allow_list[metadata_extractor.key]:

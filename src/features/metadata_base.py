@@ -1,6 +1,7 @@
 import asyncio
 import os
 import re
+import time
 from collections import OrderedDict
 from enum import Enum
 from urllib.parse import urlparse
@@ -307,8 +308,7 @@ class MetadataBase:
                 if not x.startswith(self.comment_symbol)
             ]
 
-    async def setup(self) -> None:
-        """Child function."""
+    async def _setup_downloads(self) -> None:
         async with ClientSession() as session:
             if self.urls:
                 self.tag_list = await self._download_multiple_tag_lists(
@@ -318,6 +318,10 @@ class MetadataBase:
                 self.tag_list = await self._download_tag_list(
                     url=self.url, session=session
                 )
+
+    def setup(self) -> None:
+        """Child function."""
+        asyncio.run(self._setup_downloads())
 
         if self.tag_list:
             self._extract_date_from_list()
