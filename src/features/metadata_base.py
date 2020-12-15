@@ -12,7 +12,7 @@ from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
 from features.website_manager import WebsiteData, WebsiteManager
-from lib.constants import DECISION, PROBABILITY, VALUES
+from lib.constants import DECISION, PROBABILITY, TIME_REQUIRED, VALUES
 from lib.settings import USE_LOCAL_IF_POSSIBLE
 from lib.timing import get_utc_now
 
@@ -146,7 +146,7 @@ class MetadataBase:
 
         data = {
             self.key: {
-                "time_required": get_utc_now() - before,
+                TIME_REQUIRED: get_utc_now() - before,
                 **values,
                 PROBABILITY: probability,
                 DECISION: decision,
@@ -202,42 +202,47 @@ class MetadataBase:
     def _extract_raw_links(soup: BeautifulSoup) -> list:
         return list({a["href"] for a in soup.find_all(href=True)})
 
+    def _parse_adblock_rules(self, website_data, html) -> list:
+        values = [
+            el.group() for el in self.match_rules.blacklist_re.finditer(html)
+        ]
+        self.adblockparser_options["domain"] = website_data.top_level_domain
+
+        elements_per_process = 10000
+        rules = self.match_rules.blacklist_with_options
+        number_of_workers = 1
+        options = self.adblockparser_options
+
+        if len(rules) > elements_per_process:
+            rules = [
+                rules[x : x + elements_per_process]
+                for x in range(0, len(rules), elements_per_process)
+            ]
+            number_of_workers = len(rules)
+
+        if number_of_workers > 1:
+            pool = multiprocessing.Pool(processes=number_of_workers)
+            pool_values = pool.starmap(
+                _parallel_rule_matching,
+                zip(rules, repeat(html), repeat(options)),
+            )
+        else:
+            pool_values = _parallel_rule_matching(rules, html, options)
+
+        return values + pool_values
+
     def _work_html_content(self, website_data: WebsiteData) -> list:
         values = []
+
+        self._logger.info(f"{self.__class__.__name__},{len(self.tag_list)}")
         if self.tag_list:
             html = "".join(website_data.html)
             if self.extraction_method == ExtractionMethod.MATCH_DIRECTLY:
                 values = [ele for ele in self.tag_list if html.find(ele) >= 0]
             elif self.extraction_method == ExtractionMethod.USE_ADBLOCK_PARSER:
-                values = [
-                    el.group()
-                    for el in self.match_rules.blacklist_re.finditer(html)
-                ]
-                self.adblockparser_options[
-                    "domain"
-                ] = website_data.top_level_domain
-
-                elements_per_process = 10000
-                rules = self.match_rules.blacklist_with_options
-                number_of_workers = 1
-                options = self.adblockparser_options
-                if len(rules) > elements_per_process:
-                    rules = [
-                        rules[x : x + elements_per_process]
-                        for x in range(0, len(rules), elements_per_process)
-                    ]
-                    number_of_workers = len(rules)
-
-                if number_of_workers > 1:
-                    pool = multiprocessing.Pool(processes=number_of_workers)
-                    self.metadata_extractors = pool.starmap(
-                        _parallel_rule_matching,
-                        zip(rules, repeat(html), repeat(options)),
-                    )
-                else:
-                    self.metadata_extractors = _parallel_rule_matching(
-                        rules, html, options
-                    )
+                values = self._parse_adblock_rules(
+                    website_data=website_data, html=html
+                )
 
         return values
 
@@ -247,7 +252,8 @@ class MetadataBase:
         :param website_data:
         :return:
         """
-        return {VALUES: []}
+        values = self._work_html_content(website_data=website_data)
+        return {VALUES: values}
 
     def _start(self, website_data: WebsiteData) -> dict:
         if self.evaluate_header:
