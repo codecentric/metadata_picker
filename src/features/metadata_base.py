@@ -49,6 +49,30 @@ class MetadataBase:
     call_async: bool = False
     match_rules = None
 
+    adblockparser_options = {
+        "script": True,
+        "image": True,
+        "stylesheet": True,
+        "object": True,
+        "xmlhttprequest": True,
+        "object-subrequest": True,
+        "subdocument": True,
+        "document": True,
+        "elemhide": True,
+        "other": True,
+        "background": True,
+        "xbl": True,
+        "ping": True,
+        "dtd": True,
+        "media": True,
+        "third-party": True,
+        "match-case": True,
+        "collapse": True,
+        "donottrack": True,
+        "websocket": True,
+        "domain": "",
+    }
+
     def __init__(self, logger) -> None:
         self._logger = logger
 
@@ -175,16 +199,23 @@ class MetadataBase:
     def _work_html_content(self, website_data: WebsiteData) -> list:
         values = []
         if self.tag_list:
+            html = "".join(website_data.html)
             if self.extraction_method == ExtractionMethod.MATCH_DIRECTLY:
-                values = [
-                    ele
-                    for ele in self.tag_list
-                    if website_data.html.find(ele) >= 0
-                ]
+                values = [ele for ele in self.tag_list if html.find(ele) >= 0]
             elif self.extraction_method == ExtractionMethod.USE_ADBLOCK_PARSER:
-                for url in website_data.raw_links:
-                    if self.match_rules.should_block(url):
-                        values.append(url)
+                values = [
+                    el.group()
+                    for el in self.match_rules.blacklist_re.finditer(html)
+                ]
+                self.adblockparser_options[
+                    "domain"
+                ] = website_data.top_level_domain
+                values += [
+                    rule
+                    for rule in self.match_rules.blacklist_with_options
+                    if rule.match_url(html, self.adblockparser_options)
+                ]
+
         return values
 
     async def _astart(self, website_data: WebsiteData) -> dict:
