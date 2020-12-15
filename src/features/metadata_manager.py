@@ -1,6 +1,6 @@
 import asyncio
 import multiprocessing
-import time
+from itertools import repeat
 
 from features.accessibility import Accessibility
 from features.config_manager import ConfigManager
@@ -34,8 +34,8 @@ from lib.logger import create_logger
 from lib.timing import get_utc_now
 
 
-def _create_and_setup(extractor_class) -> MetadataBase:
-    extractor: MetadataBase = extractor_class(None)
+def _create_and_setup(extractor_class, logger) -> MetadataBase:
+    extractor: MetadataBase = extractor_class(logger)
     extractor.setup()
     return extractor
 
@@ -76,7 +76,9 @@ class MetadataManager:
         ]
 
         pool = multiprocessing.Pool(processes=6)
-        self.metadata_extractors = pool.map(_create_and_setup, extractors)
+        self.metadata_extractors = pool.starmap(
+            _create_and_setup, zip(extractors, repeat(self._logger))
+        )
 
     async def _extract_meta_data(
         self, allow_list: dict, config_manager: ConfigManager
