@@ -29,6 +29,7 @@ class Advertisement(MetadataBase):
         ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
     )
     extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
+    call_async = True
 
 
 class EasyPrivacy(MetadataBase):
@@ -46,6 +47,7 @@ class EasyPrivacy(MetadataBase):
     ]
     decision_threshold = 0
     extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
+    call_async = True
 
 
 class IETracker(MetadataBase):
@@ -71,6 +73,7 @@ class CookiesInHtml(MetadataBase):
     ]
     decision_threshold = 0
     extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
+    call_async = True
 
 
 class FanboyAnnoyance(MetadataBase):
@@ -89,6 +92,7 @@ class FanboyAnnoyance(MetadataBase):
         ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
     )
     extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
+    call_async = True
 
 
 class FanboyNotification(MetadataBase):
@@ -106,6 +110,7 @@ class FanboyNotification(MetadataBase):
         ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
     )
     extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
+    call_async = True
 
 
 class FanboySocialMedia(MetadataBase):
@@ -122,6 +127,7 @@ class FanboySocialMedia(MetadataBase):
     ]
     decision_threshold = 0
     extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
+    call_async = True
 
 
 class AntiAdBlock(MetadataBase):
@@ -155,6 +161,7 @@ class EasylistGermany(MetadataBase):
     ]
     decision_threshold = 0
     extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
+    call_async = True
 
 
 class EasylistAdult(MetadataBase):
@@ -171,6 +178,7 @@ class EasylistAdult(MetadataBase):
     ]
     decision_threshold = 0
     extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
+    call_async = True
 
 
 class Paywalls(MetadataBase):

@@ -40,10 +40,6 @@ def _parallel_setup(extractor_class, logger) -> MetadataBase:
     return extractor
 
 
-def _parallel_start(extractor_class: MetadataBase):
-    return extractor_class.start()
-
-
 @Singleton
 class MetadataManager:
     metadata_extractors: list = []
@@ -89,9 +85,6 @@ class MetadataManager:
     ) -> dict:
         data = {}
         tasks = []
-
-        pool_tasks = []
-
         for metadata_extractor in self.metadata_extractors:
             metadata_extractor: MetadataBase
             if allow_list[metadata_extractor.key]:
@@ -110,11 +103,7 @@ class MetadataManager:
                 elif metadata_extractor.call_async:
                     tasks.append(metadata_extractor.astart())
                 else:
-                    pool_tasks.append(metadata_extractor)
-
-        pool = multiprocessing.Pool(processes=len(pool_tasks))
-        extracted_metadata = pool.map(_parallel_start, pool_tasks)
-        [data.update(metadata) for metadata in extracted_metadata]
+                    data.update(metadata_extractor.start())
 
         extracted_metadata = await asyncio.gather(*tasks)
         [data.update(metadata) for metadata in extracted_metadata]

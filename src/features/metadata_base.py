@@ -1,8 +1,10 @@
 import asyncio
+import multiprocessing
 import os
 import re
 from collections import OrderedDict
 from enum import Enum
+from itertools import repeat
 from urllib.parse import urlparse
 
 import adblockparser
@@ -30,6 +32,10 @@ class MetadataBaseException(Exception):
     """Base class for exceptions coming from a metadata class."""
 
     pass
+
+
+def _parallel_rule_matching(rules, html, options):
+    return [rule for rule in rules if rule.match_url(html, options)]
 
 
 class MetadataBase:
@@ -210,11 +216,28 @@ class MetadataBase:
                 self.adblockparser_options[
                     "domain"
                 ] = website_data.top_level_domain
-                values += [
-                    rule
-                    for rule in self.match_rules.blacklist_with_options
-                    if rule.match_url(html, self.adblockparser_options)
-                ]
+
+                elements_per_process = 10000
+                rules = self.match_rules.blacklist_with_options
+                number_of_workers = 1
+                options = self.adblockparser_options
+                if len(rules) > elements_per_process:
+                    rules = [
+                        rules[x : x + elements_per_process]
+                        for x in range(0, len(rules), elements_per_process)
+                    ]
+                    number_of_workers = len(rules)
+
+                if number_of_workers > 1:
+                    pool = multiprocessing.Pool(processes=number_of_workers)
+                    self.metadata_extractors = pool.starmap(
+                        _parallel_rule_matching,
+                        zip(rules, repeat(html), repeat(options)),
+                    )
+                else:
+                    self.metadata_extractors = _parallel_rule_matching(
+                        rules, html, options
+                    )
 
         return values
 
