@@ -34,10 +34,14 @@ from lib.logger import create_logger
 from lib.timing import get_utc_now
 
 
-def _create_and_setup(extractor_class, logger) -> MetadataBase:
+def _parallel_setup(extractor_class, logger) -> MetadataBase:
     extractor: MetadataBase = extractor_class(logger)
     extractor.setup()
     return extractor
+
+
+def _parallel_start(extractor_class: MetadataBase):
+    return extractor_class.start()
 
 
 @Singleton
@@ -77,7 +81,7 @@ class MetadataManager:
 
         pool = multiprocessing.Pool(processes=6)
         self.metadata_extractors = pool.starmap(
-            _create_and_setup, zip(extractors, repeat(self._logger))
+            _parallel_setup, zip(extractors, repeat(self._logger))
         )
 
     async def _extract_meta_data(
@@ -85,6 +89,8 @@ class MetadataManager:
     ) -> dict:
         data = {}
         tasks = []
+
+        pool_tasks = []
 
         for metadata_extractor in self.metadata_extractors:
             metadata_extractor: MetadataBase
@@ -104,8 +110,11 @@ class MetadataManager:
                 elif metadata_extractor.call_async:
                     tasks.append(metadata_extractor.astart())
                 else:
-                    extracted_metadata = metadata_extractor.start()
-                    data.update(extracted_metadata)
+                    pool_tasks.append(metadata_extractor)
+
+        pool = multiprocessing.Pool(processes=len(pool_tasks))
+        extracted_metadata = pool.map(_parallel_start, pool_tasks)
+        [data.update(metadata) for metadata in extracted_metadata]
 
         extracted_metadata = await asyncio.gather(*tasks)
         [data.update(metadata) for metadata in extracted_metadata]
