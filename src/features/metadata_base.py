@@ -208,7 +208,7 @@ class MetadataBase:
         ]
         self.adblockparser_options["domain"] = website_data.top_level_domain
 
-        elements_per_process = 10000
+        elements_per_process = 1000
         rules = self.match_rules.blacklist_with_options
         number_of_workers = 1
         options = self.adblockparser_options
@@ -228,8 +228,8 @@ class MetadataBase:
             )
         else:
             pool_values = _parallel_rule_matching(rules, html, options)
-
-        return values + pool_values
+        values += [y for el in pool_values for y in el]
+        return values
 
     def _work_html_content(self, website_data: WebsiteData) -> list:
         values = []
