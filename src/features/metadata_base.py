@@ -1,7 +1,6 @@
 import asyncio
 import os
 import re
-import time
 from collections import OrderedDict
 from enum import Enum
 from urllib.parse import urlparse
