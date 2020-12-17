@@ -208,7 +208,7 @@ class MetadataBase:
         ]
         self.adblockparser_options["domain"] = website_data.top_level_domain
 
-        elements_per_process = 1000
+        elements_per_process = 10000
         rules = self.match_rules.blacklist_with_options
         number_of_workers = 1
         options = self.adblockparser_options
@@ -220,6 +220,8 @@ class MetadataBase:
             ]
             number_of_workers = len(rules)
 
+        print(self.match_rules.blacklist_re)
+        print("html", html, len(rules), number_of_workers)
         if number_of_workers > 1:
             pool = multiprocessing.Pool(processes=number_of_workers)
             pool_values = pool.starmap(
@@ -228,6 +230,7 @@ class MetadataBase:
             )
         else:
             pool_values = _parallel_rule_matching(rules, html, options)
+        print("pool_values", pool_values)
         values += [y for el in pool_values for y in el]
         return values
 
