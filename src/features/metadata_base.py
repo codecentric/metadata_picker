@@ -33,6 +33,10 @@ class MetadataBaseException(Exception):
 
 
 class MetadataBase:
+    """
+    Base class for features to be extracted.
+    """
+
     tag_list: list = []
     tag_list_last_modified = ""
     tag_list_expires: int = 0
