@@ -159,26 +159,29 @@ class WebsiteManager:
         )
 
     def _extract_raw_links(self):
-        links = list(
-            {a["href"] for a in self.website_data.soup.find_all(href=True)}
-        )
+        tags = {tag.name for tag in self.website_data.soup.find_all()}
+        attributes = [
+            "href",
+            "src",
+            "srcset",
+            "img src",
+            "data-src",
+            "data-srcset",
+        ]
 
-        scripts = [
-            script.attrs.get("src")
-            for script in self.website_data.soup.findAll("script")
-        ]
-        css = [
-            el.attrs.get("href")
-            for el in self.website_data.soup.findAll(
-                "link", {"rel": "stylesheet"}
-            )
-        ]
+        links = []
+        for tag in tags:
+            for el in self.website_data.soup.find_all(tag):
+                if el is not None:
+                    links += [
+                        el.attrs.get(attribute)
+                        for attribute in attributes
+                        if el.has_attr(attribute)
+                    ]
 
         self.website_data.raw_links = [
             el
-            for el in list(
-                set(links + self.website_data.image_links + scripts + css)
-            )
+            for el in list(set(links + self.website_data.image_links))
             if el is not None
         ]
 
