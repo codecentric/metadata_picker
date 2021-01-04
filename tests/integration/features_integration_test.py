@@ -1,5 +1,5 @@
 from features.html_based import Advertisement
-from features.website_manager import WebsiteData, WebsiteManager
+from features.website_manager import WebsiteManager
 from lib.logger import create_logger
 
 # TODO Check other features, e.g. adult:
@@ -16,14 +16,32 @@ from lib.logger import create_logger
 # }
 
 
-def test_advertisement(mocker):
+def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
     _logger = create_logger()
 
-    advertisement = Advertisement(_logger)
+    feature = feature_class(_logger)
 
-    advertisement.setup()
+    feature.setup()
     website_manager = WebsiteManager.get_instance()
 
+    website_manager.load_raw_data(html)
+
+    data = feature.start()
+
+    website_manager.reset()
+
+    are_values_correct = (
+        data["advertisement"]["values"]
+        == expectation["advertisement"]["values"]
+    )
+    runs_fast_enough = (
+        data["advertisement"]["time_required"]
+        <= expectation["advertisement"]["runs_within"]
+    )
+    return are_values_correct, runs_fast_enough
+
+
+def test_advertisement():
     html = {
         "html": "<script src='/xlayer/layer.php?uid='></script>",
         "har": "",
@@ -36,18 +54,7 @@ def test_advertisement(mocker):
             "runs_within": 10,  # time the evaluation may take AT MAX -> acceptance test
         },
     }
-
-    website_manager.load_raw_data(html)
-
-    data = advertisement.start()
-
-    website_manager.reset()
-
-    assert (
-        data["advertisement"]["values"] == expected["advertisement"]["values"]
+    are_values_correct, runs_fast_enough = _test_feature(
+        feature_class=Advertisement, html=html, expectation=expected
     )
-    runs_fast_enough = (
-        data["advertisement"]["time_required"]
-        <= expected["advertisement"]["runs_within"]
-    )
-    assert runs_fast_enough
+    assert are_values_correct and runs_fast_enough
