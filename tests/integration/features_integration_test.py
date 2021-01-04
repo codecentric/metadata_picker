@@ -1,4 +1,4 @@
-from features.html_based import Advertisement
+from features.html_based import Advertisement, Paywalls
 from features.website_manager import WebsiteManager
 from lib.logger import create_logger
 
@@ -31,17 +31,18 @@ def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
     website_manager.reset()
 
     are_values_correct = (
-        data["advertisement"]["values"]
-        == expectation["advertisement"]["values"]
+        data[feature.key]["values"] == expectation[feature.key]["values"]
     )
     runs_fast_enough = (
-        data["advertisement"]["time_required"]
-        <= expectation["advertisement"]["runs_within"]
+        data[feature.key]["time_required"]
+        <= expectation[feature.key]["runs_within"]
     )
     return are_values_correct, runs_fast_enough
 
 
 def test_advertisement():
+    feature = Advertisement
+    feature._create_key(feature)
     html = {
         "html": "<script src='/xlayer/layer.php?uid='></script>",
         "har": "",
@@ -49,12 +50,33 @@ def test_advertisement():
         "headers": "{}",
     }
     expected = {
-        "advertisement": {
+        feature.key: {
             "values": ["/xlayer/layer.php?uid=$script"],
             "runs_within": 10,  # time the evaluation may take AT MAX -> acceptance test
         },
     }
     are_values_correct, runs_fast_enough = _test_feature(
-        feature_class=Advertisement, html=html, expectation=expected
+        feature_class=feature, html=html, expectation=expected
+    )
+    assert are_values_correct and runs_fast_enough
+
+
+def test_paywalls():
+    feature = Paywalls
+    html = {
+        "html": "<paywall></paywalluser>",
+        "har": "",
+        "url": "",
+        "headers": "{}",
+    }
+    expected = {
+        feature.key: {
+            "values": ["paywall", "paywalluser"],
+            "runs_within": 10,  # time the evaluation may take AT MAX -> acceptance test
+        },
+    }
+
+    are_values_correct, runs_fast_enough = _test_feature(
+        feature_class=feature, html=html, expectation=expected
     )
     assert are_values_correct and runs_fast_enough
