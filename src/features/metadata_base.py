@@ -142,6 +142,9 @@ class MetadataBase:
         probability = self._calculate_probability(website_data=website_data)
         decision = self._decide(probability=probability)
 
+        if not decision:
+            probability = 0
+
         data = {
             self.key: {
                 TIME_REQUIRED: get_utc_now() - before,
