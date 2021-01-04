@@ -28,8 +28,8 @@ class Advertisement(MetadataBase):
     probability_determination_method = (
         ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
     )
-    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
     call_async = True
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class EasyPrivacy(MetadataBase):
@@ -46,8 +46,8 @@ class EasyPrivacy(MetadataBase):
         "https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_thirdparty_international.txt",
     ]
     decision_threshold = 0
-    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
     call_async = True
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class IETracker(MetadataBase):
@@ -72,8 +72,8 @@ class CookiesInHtml(MetadataBase):
         "https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_thirdparty.txt",
     ]
     decision_threshold = 0
-    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
     call_async = True
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class FanboyAnnoyance(MetadataBase):
@@ -91,8 +91,8 @@ class FanboyAnnoyance(MetadataBase):
     probability_determination_method = (
         ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
     )
-    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
     call_async = True
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class FanboyNotification(MetadataBase):
@@ -109,8 +109,8 @@ class FanboyNotification(MetadataBase):
     probability_determination_method = (
         ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
     )
-    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
     call_async = True
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class FanboySocialMedia(MetadataBase):
@@ -126,8 +126,8 @@ class FanboySocialMedia(MetadataBase):
         "https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_social_thirdparty.txt",
     ]
     decision_threshold = 0
-    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
     call_async = True
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class AntiAdBlock(MetadataBase):
@@ -160,8 +160,8 @@ class EasylistGermany(MetadataBase):
         "https://raw.githubusercontent.com/easylist/easylistgermany/master/easylistgermany/easylistgermany_thirdparty_popup.txt",
     ]
     decision_threshold = 0
-    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
     call_async = True
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class EasylistAdult(MetadataBase):
@@ -177,8 +177,8 @@ class EasylistAdult(MetadataBase):
         "https://raw.githubusercontent.com/easylist/easylist/master/easylist_adult/adult_thirdparty_popup.txt",
     ]
     decision_threshold = 0
-    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
     call_async = True
+    extraction_method = ExtractionMethod.USE_ADBLOCK_PARSER
 
 
 class Paywalls(MetadataBase):

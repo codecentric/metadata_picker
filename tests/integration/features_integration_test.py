@@ -6,7 +6,7 @@ from lib.logger import create_logger
 Call each feature separately with known html+har etc.
 Compare to what I expect
 For now, this will fail
- 
+
 """
 
 # FIXME:
@@ -63,7 +63,6 @@ expected = {
     "advertisement": {"values": ["ad_block", "ad_slot="]},
     "runs_within": 10,  # time the evaluation may take AT MAX -> acceptance test
 }
-
 
 # TODO: Have some websites evaluated, store the evaluation and compare with future evaluations
 

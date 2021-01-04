@@ -1,10 +1,8 @@
 import asyncio
-import multiprocessing
 import os
 import re
 from collections import OrderedDict
 from enum import Enum
-from itertools import repeat
 from urllib.parse import urlparse
 
 import adblockparser
@@ -32,10 +30,6 @@ class MetadataBaseException(Exception):
     """Base class for exceptions coming from a metadata class."""
 
     pass
-
-
-def _parallel_rule_matching(rules, html, options):
-    return [rule for rule in rules if rule.match_url(html, options)]
 
 
 class MetadataBase:
@@ -202,36 +196,21 @@ class MetadataBase:
     def _extract_raw_links(soup: BeautifulSoup) -> list:
         return list({a["href"] for a in soup.find_all(href=True)})
 
-    def _parse_adblock_rules(self, website_data, html) -> list:
-        values = [
-            el.group() for el in self.match_rules.blacklist_re.finditer(html)
-        ]
+    def _parse_adblock_rules(self, website_data: WebsiteData) -> list:
+        values = []
         self.adblockparser_options["domain"] = website_data.top_level_domain
 
-        elements_per_process = 10000
-        rules = self.match_rules.blacklist_with_options
-        number_of_workers = 1
-        options = self.adblockparser_options
-
-        if len(rules) > elements_per_process:
-            rules = [
-                rules[x : x + elements_per_process]
-                for x in range(0, len(rules), elements_per_process)
+        for url in website_data.raw_links:
+            values += [
+                el.group()
+                for el in self.match_rules.blacklist_re.finditer(url)
             ]
-            number_of_workers = len(rules)
+            values += [
+                rule
+                for rule in self.match_rules.blacklist_with_options
+                if rule.match_url(url, self.adblockparser_options)
+            ]
 
-        print(self.match_rules.blacklist_re)
-        print("html", html, len(rules), number_of_workers)
-        if number_of_workers > 1:
-            pool = multiprocessing.Pool(processes=number_of_workers)
-            pool_values = pool.starmap(
-                _parallel_rule_matching,
-                zip(rules, repeat(html), repeat(options)),
-            )
-        else:
-            pool_values = _parallel_rule_matching(rules, html, options)
-        print("pool_values", pool_values)
-        values += [y for el in pool_values for y in el]
         return values
 
     def _work_html_content(self, website_data: WebsiteData) -> list:
@@ -239,13 +218,11 @@ class MetadataBase:
 
         self._logger.info(f"{self.__class__.__name__},{len(self.tag_list)}")
         if self.tag_list:
-            html = "".join(website_data.html)
             if self.extraction_method == ExtractionMethod.MATCH_DIRECTLY:
+                html = "".join(website_data.html)
                 values = [ele for ele in self.tag_list if html.find(ele) >= 0]
             elif self.extraction_method == ExtractionMethod.USE_ADBLOCK_PARSER:
-                values = self._parse_adblock_rules(
-                    website_data=website_data, html=html
-                )
+                values = self._parse_adblock_rules(website_data=website_data)
 
         return values
 
