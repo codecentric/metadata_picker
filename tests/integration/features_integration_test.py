@@ -12,6 +12,7 @@ from features.html_based import (
     FanboySocialMedia,
     Paywalls,
     PopUp,
+    LogInOut,
 )
 from features.malicious_extensions import MaliciousExtensions
 from features.website_manager import WebsiteManager
@@ -368,6 +369,36 @@ sizes="(max-width: 845px) 100vw, 845px" /></noscript>
             "values": [
                 "modal",
                 "interstitial",
+            ],
+            "excluded_values": [],
+            "runs_within": 2,  # time the evaluation may take AT MAX -> acceptance test}
+        }
+    }
+
+    are_values_correct, runs_fast_enough = _test_feature(
+        feature_class=feature, html=html, expectation=expected
+    )
+    assert are_values_correct and runs_fast_enough
+
+
+def test_log_in_out():
+    feature = LogInOut
+    feature._create_key(feature)
+
+    html = {
+        "html": """input[type="email"]:focus,input[type="url"]:focus,input[type="password"]:focus,input[type="reset"]:
+input#submit,input[type="button"],input[type="submit"],input[type="reset"]
+""",
+        "har": "",
+        "url": "",
+        "headers": "{}",
+    }
+    expected = {
+        feature.key: {
+            "values": [
+                "email",
+                "password",
+                "submit",
             ],
             "excluded_values": [],
             "runs_within": 2,  # time the evaluation may take AT MAX -> acceptance test}
