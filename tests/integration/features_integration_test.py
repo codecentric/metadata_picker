@@ -10,6 +10,7 @@ from features.html_based import (
     EasylistAdult,
     EasyPrivacy,
     Paywalls,
+    FanboySocialMedia,
 )
 from features.malicious_extensions import MaliciousExtensions
 from features.website_manager import WebsiteManager
@@ -34,6 +35,7 @@ def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
 
     website_manager.reset()
 
+    print(data)
     are_values_correct = set(data[feature.key]["values"]) == set(
         expectation[feature.key]["values"]
     )
@@ -289,6 +291,39 @@ Arbeitsblatt analog L\u00f6sung.docx</a>
             "values": [
                 "arbeitsblatt_analog_losung.pdf",
                 "arbeitsblatt_analog_losung.docx",
+            ],
+            "excluded_values": [],
+            "runs_within": 2,  # time the evaluation may take AT MAX -> acceptance test}
+        }
+    }
+
+    are_values_correct, runs_fast_enough = _test_feature(
+        feature_class=feature, html=html, expectation=expected
+    )
+    assert are_values_correct and runs_fast_enough
+
+
+def test_fanboy_social_media():
+    feature = FanboySocialMedia
+    feature._create_key(feature)
+
+    html = {
+        "html": """<link rel='stylesheet' id='wpzoom-social-icons-block-style-css'  href=
+'https://canyoublockit.com/wp-content/plugins/social-icons-widget-by-wpzoom/block/dist/blocks.style.build.css
+?ver=1603794146' type='text/css' media='all' />
+<script type="4fc846f350e30f875f7efd7a-text/javascript" src=
+'https://canyoublockit.com/wp-content/plugins/elementor/assets/lib/share-link/share-link.min.js?ver=3.0.15'
+id='share-link-js'></script>
+""",
+        "har": "",
+        "url": "",
+        "headers": "{}",
+    }
+    expected = {
+        feature.key: {
+            "values": [
+                "/social-icons-",
+                "/share-link/share-link.min.js?ver=3.0.15",
             ],
             "excluded_values": [],
             "runs_within": 2,  # time the evaluation may take AT MAX -> acceptance test}
