@@ -2,6 +2,7 @@ import json
 import os
 import re
 from dataclasses import dataclass, field
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -199,8 +200,8 @@ class WebsiteManager:
 
     def _extract_extensions(self):
         file_extensions = [
-            os.path.splitext(link)[-1]
-            for link in self.website_data.image_links
+            os.path.splitext(urlparse(link)[2])[-1]
+            for link in self.website_data.raw_links
         ]
         self.website_data.extensions = [
             x for x in list(set(file_extensions)) if x != ""
