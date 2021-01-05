@@ -273,9 +273,7 @@ def test_extract_from_files():
     feature._create_key(feature)
     feature.start = _test_extract_from_files_start_wrapper
     feature.call_async = False
-    #
-    # <a href=\"https://dll-production.s3-de-central.profitbricks.com/media/filer_public/06/78/0678543a-fa24-4aa4-9250-e6a8d7650fd3/arbeitsblatt_analog_losung.pdf\" target=\"_blank\">
-    # Arbeitsblatt analog L\u00f6sung.pdf</a>
+
     html = {
         "html": """<a href=\"arbeitsblatt_analog_losung.pdf\" target=\"_blank\">
 Arbeitsblatt analog L\u00f6sung.pdf</a>
