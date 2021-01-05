@@ -32,7 +32,6 @@ def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
     else:
         data = feature.start()
 
-    print("data: ", data)
     website_manager.reset()
 
     are_values_correct = set(data[feature.key]["values"]) == set(
