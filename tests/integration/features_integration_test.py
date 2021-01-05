@@ -9,8 +9,9 @@ from features.html_based import (
     CookiesInHtml,
     EasylistAdult,
     EasyPrivacy,
-    Paywalls,
     FanboySocialMedia,
+    Paywalls,
+    PopUp,
 )
 from features.malicious_extensions import MaliciousExtensions
 from features.website_manager import WebsiteManager
@@ -324,6 +325,49 @@ id='share-link-js'></script>
             "values": [
                 "/social-icons-",
                 "/share-link/share-link.min.js?ver=3.0.15",
+            ],
+            "excluded_values": [],
+            "runs_within": 2,  # time the evaluation may take AT MAX -> acceptance test}
+        }
+    }
+
+    are_values_correct, runs_fast_enough = _test_feature(
+        feature_class=feature, html=html, expectation=expected
+    )
+    assert are_values_correct and runs_fast_enough
+
+
+def test_pop_up():
+    feature = PopUp
+    feature._create_key(feature)
+
+    html = {
+        "html": """<noscript><img width="845" height="477"
+src="https://canyoublockit.com/wp-content/uploads/2020/01/Screenshot_1.png" class="attachment-large size-large"
+alt="Scum Interstitial Ad Placement" loading="lazy" srcset=
+"https://canyoublockit.com/wp-content/uploads/2020/01/Screenshot_1.png 845w,
+https://canyoublockit.com/wp-content/uploads/2020/01/Screenshot_1-300x169.png 300w,
+https://canyoublockit.com/wp-content/uploads/2020/01/Screenshot_1-768x434.png 768w"
+sizes="(max-width: 845px) 100vw, 845px" /></noscript>
+<div id="KKIbeOcDqZob" class="rIdHlTQAtJaQ" style="background:#dddddd;z-index:9999999; "></div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script type="4fc846f350e30f875f7efd7a-text/javascript">/* <![CDATA[ */var anOptions =
+{"anOptionChoice":"2","anOptionStats":"1","anOptionAdsSelectors":"","anOptionCookie":"1","anOptionCookieLife":"30",
+"anPageRedirect":"","anPermalink":"undefined","anOptionModalEffect":"fadeAndPop","anOptionModalspeed":"350",
+"anOptionModalclose":true,"anOptionModalOverlay":"rgba( 0,0,0,0.8 )","anAlternativeActivation":false,
+"anAlternativeElement":"","anAlternativeText":","anAlternativeClone":"2","anAlternativeProperties":"",
+"anOptionModalShowAfter":0,"anPageMD5":"","anSiteID":0,
+"modalHTML":"
+""",
+        "har": "",
+        "url": "",
+        "headers": "{}",
+    }
+    expected = {
+        feature.key: {
+            "values": [
+                "modal",
+                "interstitial",
             ],
             "excluded_values": [],
             "runs_within": 2,  # time the evaluation may take AT MAX -> acceptance test}
