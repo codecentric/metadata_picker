@@ -4,15 +4,16 @@ import time
 from urllib.parse import urlparse
 
 from features.extract_from_files import ExtractFromFiles
+from features.gdpr import GDPR
 from features.html_based import (
     Advertisement,
     CookiesInHtml,
     EasylistAdult,
     EasyPrivacy,
     FanboySocialMedia,
+    LogInOut,
     Paywalls,
     PopUp,
-    LogInOut,
 )
 from features.malicious_extensions import MaliciousExtensions
 from features.website_manager import WebsiteManager
@@ -37,7 +38,6 @@ def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
 
     website_manager.reset()
 
-    print(data)
     are_values_correct = set(data[feature.key]["values"]) == set(
         expectation[feature.key]["values"]
     )
@@ -401,6 +401,52 @@ input#submit,input[type="button"],input[type="submit"],input[type="reset"]
                 "submit",
             ],
             "excluded_values": [],
+            "runs_within": 2,  # time the evaluation may take AT MAX -> acceptance test}
+        }
+    }
+
+    are_values_correct, runs_fast_enough = _test_feature(
+        feature_class=feature, html=html, expectation=expected
+    )
+    assert are_values_correct and runs_fast_enough
+
+
+def test_g_d_p_r():
+    feature = GDPR
+    feature._create_key(feature)
+
+    html = {
+        "html": """
+<link rel=\"preload\" href=\"/mediathek/podcast/dist/runtime.2e1c836.js\" as=\"script\">
+@font-face {font-family: "Astra";
+src: url(https://canyoublockit.com/wp-content/themes/astra/assets/fonts/astra.svg#astra)
+format("svg");font-weight: normal;font-style: normal;font-display: fallback;}
+<button type='button' class='menu-toggle main-header-menu-toggle  ast-mobile-menu-buttons-fill '
+        aria-controls='primary-menu' aria-expanded='false'>
+<datetime type='datetime'>
+<a href=\"/impressum\">Impressum</a>
+""",
+        "har": "",
+        "url": "https://www.tutory.de",
+        "headers": "{b'Referrer-Policy': [b'no-referrer'],"
+        "b'Strict-Transport-Security': [b'max-age=15724800; includeSubDomains']}",
+    }
+    expected = {
+        feature.key: {
+            "values": [
+                "preload",
+                "https_in_url",
+                "hsts",
+                "includesubdomains",
+                "do_not_preload",
+                "max_age",
+                "found_fonts,https://canyoublockit.com/wp-content/themes/astra/assets/fonts/astra.svg#astra",
+                "no_referrerpolicy",
+                "no-referrer",
+                "found_inputs,button,datetime",
+                "impressum",
+            ],
+            "excluded_values": ["no_link_rel", "do_not_max_age"],
             "runs_within": 2,  # time the evaluation may take AT MAX -> acceptance test}
         }
     }
