@@ -169,10 +169,16 @@ class WebsiteManager:
             "data-srcset",
         ]
 
+        script_re = re.compile(r"src\=[\"|\']([\w\d\:\/\.\-\?\=]+)[\"|\']")
+
         links = []
         for tag in tags:
             for el in self.website_data.soup.find_all(tag):
                 if el is not None:
+                    if tag == "script":
+                        matches = script_re.findall(str(el).replace("\n", ""))
+                        if len(matches) > 0:
+                            links += matches
                     links += [
                         el.attrs.get(attribute)
                         for attribute in attributes

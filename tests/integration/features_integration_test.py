@@ -1,7 +1,9 @@
+from features.accessibility import Accessibility
 from features.html_based import (
     Advertisement,
     CookiesInHtml,
     EasylistAdult,
+    EasyPrivacy,
     Paywalls,
 )
 from features.website_manager import WebsiteManager
@@ -22,9 +24,15 @@ def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
 
     website_manager.reset()
 
-    are_values_correct = (
-        data[feature.key]["values"] == expectation[feature.key]["values"]
+    are_values_correct = set(data[feature.key]["values"]) == set(
+        expectation[feature.key]["values"]
     )
+    if are_values_correct and "excluded_values" in expectation[feature.key]:
+        are_values_correct = (
+            not data[feature.key]["values"]
+            in expectation[feature.key]["excluded_values"]
+        )
+
     runs_fast_enough = (
         data[feature.key]["time_required"]
         <= expectation[feature.key]["runs_within"]
@@ -119,6 +127,45 @@ if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(wi
     expected = {
         feature.key: {
             "values": ["||iubenda.com^$third-party"],
+            "runs_within": 10,  # time the evaluation may take AT MAX -> acceptance test}
+        }
+    }
+
+    are_values_correct, runs_fast_enough = _test_feature(
+        feature_class=feature, html=html, expectation=expected
+    )
+    assert are_values_correct and runs_fast_enough
+
+
+def test_easy_privacy():
+    feature = EasyPrivacy
+    feature._create_key(feature)
+    html = {
+        "html": """<link rel='dns-prefetch' href='//www.googletagmanager.com' />
+<script type="6cf3255238f69b4dbff7a6d1-text/javascript">!(function(o,n,t){t=o.createElement(n),
+o=o.getElementsByTagName(n)[0],t.async=1,t.src=
+"https://steadfastsystem.com/v2/0/mhdUYBjmgxDP_SQetgnGiancNmP1JIkDmyyXS_JPnDK2hCg_pE_-EVQw61Zu8YEjN6n_TSzbOSci6fkr2DxbJ4T-NH35ngHIfU1tGluTSrud8VFduwH1nKtjGf3-jvZWHD2MaGeUQ",
+o.parentNode.insertBefore(t,o)})(document,"script"),
+(function(o,n){o[n]=o[n]||function(){(o[n].q=o[n].q||[]).push(arguments)}})(window,"admiral");
+!(function(n,e,r,t){function o(){if((function o(t){try{return(t=localStorage.getItem("v4ac1eiZr0"))&&0<t.split(",")[4]}
+catch(n){}return!1})()){var t=n[e].pubads();typeof t.setTargeting===r&&t.setTargeting("admiral-engaged","true")}}
+(t=n[e]=n[e]||{}).cmd=t.cmd||[],typeof t.pubads===r?o():typeof t.cmd.unshift===r?t.cmd.unshift(o):t.cmd.push(o)})
+(window,"googletag","function");</script><script type="6cf3255238f69b4dbff7a6d1-text/javascript"
+src='https://cdn.fluidplayer.com/v2/current/fluidplayer.min.js?ver=5.6' id='fluid-player-js-js'></script>
+""",
+        "har": "",
+        "url": "",
+        "headers": "{}",
+    }
+    expected = {
+        feature.key: {
+            "values": [
+                "||googletagmanager.com^$image,third-party",
+                "||steadfastsystem.com^$third-party",
+            ],
+            "excluded_values": [
+                "https://cdn.fluidplayer.com/v2/current/fluidplayer.min.js?ver=5.6"
+            ],
             "runs_within": 10,  # time the evaluation may take AT MAX -> acceptance test}
         }
     }
