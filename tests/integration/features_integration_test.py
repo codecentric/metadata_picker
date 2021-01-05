@@ -1,4 +1,9 @@
-from features.accessibility import Accessibility
+import asyncio
+import os
+import time
+from urllib.parse import urlparse
+
+from features.extract_from_files import ExtractFromFiles
 from features.html_based import (
     Advertisement,
     CookiesInHtml,
@@ -8,6 +13,7 @@ from features.html_based import (
 )
 from features.malicious_extensions import MaliciousExtensions
 from features.website_manager import WebsiteManager
+from lib.constants import VALUES
 from lib.logger import create_logger
 
 
@@ -21,7 +27,10 @@ def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
 
     website_manager.load_raw_data(html)
 
-    data = feature.start()
+    if feature.call_async:
+        data = asyncio.run(feature.astart())
+    else:
+        data = feature.start()
 
     website_manager.reset()
 
@@ -217,6 +226,74 @@ src='https://cdn.fluidplayer.com/v2/current/fluidplayer.min.js?ver=5.6' id='flui
             "values": [".exe", ".pdf", ".js"],
             "excluded_values": [".6"],
             "runs_within": 10,  # time the evaluation may take AT MAX -> acceptance test}
+        }
+    }
+
+    are_values_correct, runs_fast_enough = _test_feature(
+        feature_class=feature, html=html, expectation=expected
+    )
+    assert are_values_correct and runs_fast_enough
+
+
+def _test_extract_from_files_start_wrapper(self):
+    before = time.perf_counter()
+    website_data = self._prepare_website_data()
+    extractable_files = self._get_extractable_files(website_data)
+
+    path = os.getcwd()
+    current_dir = path.split("/")[-1]
+    if current_dir == "integration":
+        path = "/".join(path.split("/")[:-1])
+    elif current_dir != "tests":
+        path = path + "/tests/"
+    path = path + "/files/"
+
+    values = []
+    for file in extractable_files:
+        filename = os.path.basename(urlparse(file).path)
+        extension = filename.split(".")[-1]
+
+        content = {"extracted_content": [], "images": {}}
+        if extension == "docx":
+            content = self._extract_docx(path + filename)
+        elif extension == "pdf":
+            content = self._extract_pdfs(path + filename)
+        if len(content["extracted_content"]) > 0:
+            values.append(filename)
+    return {
+        self.key: {
+            VALUES: values,
+            "time_required": time.perf_counter() - before,
+        },
+    }
+
+
+def test_extract_from_files():
+    feature = ExtractFromFiles
+    feature._create_key(feature)
+    feature.start = _test_extract_from_files_start_wrapper
+    feature.call_async = False
+    #
+    # <a href=\"https://dll-production.s3-de-central.profitbricks.com/media/filer_public/06/78/0678543a-fa24-4aa4-9250-e6a8d7650fd3/arbeitsblatt_analog_losung.pdf\" target=\"_blank\">
+    # Arbeitsblatt analog L\u00f6sung.pdf</a>
+    html = {
+        "html": """<a href=\"arbeitsblatt_analog_losung.pdf\" target=\"_blank\">
+Arbeitsblatt analog L\u00f6sung.pdf</a>
+<a href=\"arbeitsblatt_analog_losung.docx\" target=\"_blank\">
+Arbeitsblatt analog L\u00f6sung.docx</a>
+""",
+        "har": "",
+        "url": "",
+        "headers": "{}",
+    }
+    expected = {
+        feature.key: {
+            "values": [
+                "arbeitsblatt_analog_losung.pdf",
+                "arbeitsblatt_analog_losung.docx",
+            ],
+            "excluded_values": [],
+            "runs_within": 2,  # time the evaluation may take AT MAX -> acceptance test}
         }
     }
 
