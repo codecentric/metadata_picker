@@ -6,6 +6,11 @@ sudo apt-get install python3.9
 python3.9 -m pip3 install poetry
 ```
 
+# Staying up to date
+
+The repository and docker containers do not auto update.
+Update the dependencies and rebuild the containers regularly.
+
 # Launching the container
 
 1. Start the container by executing `run.sh` from the main folder, not from `src`
