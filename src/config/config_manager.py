@@ -1,3 +1,6 @@
+import json
+import os
+
 from features.website_manager import Singleton
 from lib.constants import DECISION, PROBABILITY, VALUES
 
@@ -30,8 +33,13 @@ HOST_SPECIFIC_CONFIG = {
 class ConfigManager:
     def __init__(self):
         super().__init__()
-        self.hosts: dict = HOST_SPECIFIC_CONFIG
         self.top_level_domain: str = ""
+        self._load_config()
+
+    def _load_config(self):
+        with open("config/config.json", "r") as json_file:
+            text = "".join(json_file.readlines())
+            self.hosts: dict = json.loads(text)
 
     def is_host_predefined(self):
         return self.top_level_domain in self.hosts.keys()
