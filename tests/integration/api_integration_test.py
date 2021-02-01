@@ -21,9 +21,9 @@ else:
 
 
 def _start_api(send_message, get_message):
-    app.api_queue = mock.MagicMock()
-    app.api_queue.send_message = send_message
-    app.api_queue.get_message = get_message
+    app.communicator = mock.MagicMock()
+    app.communicator.send_message = send_message
+    app.communicator.get_message = get_message
     uvicorn.run(app, host="0.0.0.0", port=API_PORT, log_level="info")
 
 
