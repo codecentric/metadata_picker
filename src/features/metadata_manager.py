@@ -2,8 +2,8 @@ import asyncio
 import multiprocessing
 from itertools import repeat
 
-from features.accessibility import Accessibility
 from config.config_manager import ConfigManager
+from features.accessibility import Accessibility
 from features.cookies import Cookies
 from features.extract_from_files import ExtractFromFiles
 from features.gdpr import GDPR
