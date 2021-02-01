@@ -1,32 +1,6 @@
 import json
-import os
 
 from features.website_manager import Singleton
-from lib.constants import DECISION, PROBABILITY, VALUES
-
-# FIXME: Dummy config, move to file if there are a lot of entries
-HOST_SPECIFIC_CONFIG = {
-    "bbc": {
-        "advertisement": {VALUES: [], PROBABILITY: 1.0, DECISION: False},
-        "iframe_embeddable": {
-            VALUES: ["test_shennanigan"],
-            PROBABILITY: 1.0,
-            DECISION: False,
-        },
-    },
-    "github": {
-        "advertisement": {
-            VALUES: ["random_ads"],
-            PROBABILITY: 1.0,
-            DECISION: False,
-        },
-        "iframe_embeddable": {
-            VALUES: ["test_shenanigan"],
-            PROBABILITY: 1.0,
-            DECISION: False,
-        },
-    },
-}
 
 
 @Singleton
