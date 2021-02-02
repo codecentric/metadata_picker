@@ -310,13 +310,20 @@ class MetadataBase:
                 break
 
     def _prepare_tag_list(self) -> None:
+        print("self.tag_list before: ", len(self.tag_list))
+        print(self.comment_symbol)
         tag_list = [
             el.lower()
             for el in self.tag_list
-            if el != "" or not el.startswith(self.comment_symbol)
+            if el != ""
+            and (
+                self.comment_symbol == ""
+                or not el.startswith(self.comment_symbol)
+            )
         ]
 
         self.tag_list = list(OrderedDict.fromkeys(tag_list))
+        print("self.tag_list after: ", len(self.tag_list))
 
     async def _setup_downloads(self) -> None:
         async with ClientSession() as session:

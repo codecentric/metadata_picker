@@ -44,6 +44,10 @@ def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
     else:
         data = feature.start()
 
+    print(data)
+    print(expectation)
+    print(website_manager.website_data)
+
     website_manager.reset()
 
     try:

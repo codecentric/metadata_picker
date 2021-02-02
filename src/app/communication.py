@@ -24,18 +24,14 @@ class QueueCommunicator:
             uuid = None
         return uuid
 
-    def _receive_message(self) -> bool:
-        message_received = False
+    def _receive_message(self) -> None:
         try:
             response = self._receive_queue.get(block=True, timeout=1)
             if isinstance(response, dict):
                 for uuid, message in response.items():
                     self._request_queue.update({uuid: message})
-                    message_received = True
-                    break
         except queue.Empty:
             print("Queue empty")
-        return message_received
 
     def get_message(self, uuid: UUID) -> Optional[dict]:
         tries = 1

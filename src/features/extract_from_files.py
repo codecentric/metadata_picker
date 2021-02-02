@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 import PyPDF2
 from aiohttp import ClientSession
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
 from pdfminer.high_level import extract_text
 from PyPDF2.utils import PdfReadError
 
@@ -51,8 +51,10 @@ class ExtractFromFiles(MetadataBase):
     ]
 
     @staticmethod
-    def _get_xml_body(soup: BeautifulSoup, xml_file: zipfile.ZipInfo) -> Tag:
-        body: Tag = BeautifulSoup()
+    def _get_xml_body(
+        soup: BeautifulSoup, xml_file: zipfile.ZipInfo
+    ) -> BeautifulSoup:
+        body = BeautifulSoup()
         if xml_file.filename == "word/document.xml":
             body = soup.document.body
         elif xml_file.filename == "word/footer1.xml":
