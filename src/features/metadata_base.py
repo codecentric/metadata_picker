@@ -20,6 +20,8 @@ class ProbabilityDeterminationMethod(Enum):
     NUMBER_OF_ELEMENTS = 1
     SINGLE_OCCURRENCE = 2
     FIRST_VALUE = 3
+    FALSE_LIST = 4
+    MEAN_VALUE = 5
 
 
 class ExtractionMethod(Enum):
@@ -35,6 +37,7 @@ class MetadataBase:
     tag_list: list = []
     tag_list_last_modified = ""
     tag_list_expires: int = 0
+    false_list: list = []
     key: str = ""
     url: str = ""
     urls: list = []
@@ -91,10 +94,15 @@ class MetadataBase:
             ratio = 0
         return round(ratio, 2)
 
-    def _calculate_decision_indicator(
-        self, website_data: WebsiteData
+    def _calculate_probability_from_ratio(
+        self, decision_indicator: float
     ) -> float:
-        decision_indicator = -1
+        return abs(
+            (decision_indicator - self.decision_threshold)
+            / (1 - self.decision_threshold)
+        )
+
+    def _decide(self, website_data: WebsiteData) -> tuple[bool, float]:
         if (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
@@ -102,39 +110,50 @@ class MetadataBase:
             decision_indicator = self._get_ratio_of_elements(
                 website_data=website_data
             )
+            probability = self._calculate_probability_from_ratio(
+                decision_indicator
+            )
+            decision = decision_indicator > self.decision_threshold
         elif (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.SINGLE_OCCURRENCE
         ):
-            decision_indicator = (
+            probability = (
                 1
                 if (website_data.values and len(website_data.values) > 0)
                 else 0
             )
+            decision = probability > self.decision_threshold
         elif (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.FIRST_VALUE
             and len(website_data.values) >= 1
         ):
-            decision_indicator = website_data.values[0]
-        return decision_indicator
-
-    def _decide(self, website_data: WebsiteData) -> tuple[bool, float]:
-        decision_indicator = self._calculate_decision_indicator(
-            website_data=website_data
-        )
-
-        decision = False
-        if self.decision_threshold == -1:
-            probability = 0
-        else:
-            probability = abs(
-                (decision_indicator - self.decision_threshold)
-                / (1 - self.decision_threshold)
+            probability = self._calculate_probability_from_ratio(
+                website_data.values[0]
             )
-
-            if decision_indicator > self.decision_threshold:
-                decision = True
+            decision = website_data.values[0] > self.decision_threshold
+        elif (
+            self.probability_determination_method
+            == ProbabilityDeterminationMethod.MEAN_VALUE
+            and len(website_data.values) >= 1
+        ):
+            mean = sum(website_data.values) / (len(website_data.values))
+            probability = self._calculate_probability_from_ratio(mean)
+            decision = mean > self.decision_threshold
+        elif (
+            self.probability_determination_method
+            == ProbabilityDeterminationMethod.FALSE_LIST
+        ):
+            probability = 1
+            decision = True
+            for false_element in self.false_list:
+                if false_element in website_data.values:
+                    decision = False
+                    break
+        else:
+            probability = 0
+            decision = False
 
         return decision, probability
 

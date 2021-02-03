@@ -173,9 +173,7 @@ class GDPR(MetadataBase):
 
         return {VALUES: list(set(flat_values)), "http_links": http_links}
 
-    def _calculate_decision_indicator(
-        self, website_data: WebsiteData
-    ) -> float:
+    def _decide(self, website_data: WebsiteData) -> tuple[bool, float]:
         decision_indicator = 0.5
 
         if (
@@ -194,4 +192,5 @@ class GDPR(MetadataBase):
         if decision_indicator < 0:
             decision_indicator = 0
 
-        return decision_indicator
+        decision = decision_indicator > self.decision_threshold
+        return decision, decision_indicator
