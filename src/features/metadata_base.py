@@ -247,14 +247,34 @@ class MetadataBase:
         values = []
         self.adblockparser_options["domain"] = website_data.top_level_domain
 
+        if self.match_rules.whitelist_re is not None:
+            whitelist_re = self.match_rules.whitelist_re.finditer
+            whitelist_with_options = self.match_rules.whitelist_with_options
+            skip_whitelist = False
+        else:
+            skip_whitelist = True
+            whitelist_re = None
+            whitelist_with_options = None
+
+        blacklist_re = self.match_rules.blacklist_re.finditer
+        blacklist_with_options = self.match_rules.blacklist_with_options
+
         for url in website_data.raw_links:
-            values += [
-                el.group()
-                for el in self.match_rules.blacklist_re.finditer(url)
-            ]
+            if not skip_whitelist:
+                whitelisted = [el.group() for el in whitelist_re(url)]
+                whitelisted += [
+                    rule.raw_rule_text
+                    for rule in whitelist_with_options
+                    if rule.match_url(url, self.adblockparser_options)
+                ]
+                if len(whitelisted) > 0:
+                    self._logger.debug("whitelisted: ", whitelisted)
+                    continue
+
+            values += [el.group() for el in blacklist_re(url)]
             values += [
                 rule.raw_rule_text
-                for rule in self.match_rules.blacklist_with_options
+                for rule in blacklist_with_options
                 if rule.match_url(url, self.adblockparser_options)
             ]
 
