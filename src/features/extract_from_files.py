@@ -194,7 +194,9 @@ class ExtractFromFiles(MetadataBase):
         values = await self._work_files(files=extractable_files)
         return {**values}
 
-    def _calculate_probability(self, website_data: WebsiteData) -> float:
+    def _calculate_decision_indicator(
+        self, website_data: WebsiteData
+    ) -> float:
         probability = 0
         extractable_files = self._get_extractable_files(website_data)
 

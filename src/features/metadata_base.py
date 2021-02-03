@@ -91,20 +91,22 @@ class MetadataBase:
             ratio = 0
         return round(ratio, 2)
 
-    def _calculate_probability(self, website_data: WebsiteData) -> float:
-        probability = -1
+    def _calculate_decision_indicator(
+        self, website_data: WebsiteData
+    ) -> float:
+        decision_indicator = -1
         if (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.NUMBER_OF_ELEMENTS
         ):
-            probability = self._get_ratio_of_elements(
+            decision_indicator = self._get_ratio_of_elements(
                 website_data=website_data
             )
         elif (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.SINGLE_OCCURRENCE
         ):
-            probability = (
+            decision_indicator = (
                 1
                 if (website_data.values and len(website_data.values) > 0)
                 else 0
@@ -114,18 +116,27 @@ class MetadataBase:
             == ProbabilityDeterminationMethod.FIRST_VALUE
             and len(website_data.values) >= 1
         ):
-            probability = website_data.values[0]
+            decision_indicator = website_data.values[0]
+        return decision_indicator
 
-        return probability
+    def _decide(self, website_data: WebsiteData) -> tuple[bool, float]:
+        decision_indicator = self._calculate_decision_indicator(
+            website_data=website_data
+        )
 
-    def _decide(self, probability: float) -> bool:
-        if self.decision_threshold == -1 or probability == -1:
-            decision = None
-        elif probability > self.decision_threshold:
-            decision = True
+        decision = False
+        if self.decision_threshold == -1:
+            probability = 0
         else:
-            decision = False
-        return decision
+            probability = abs(
+                (decision_indicator - self.decision_threshold)
+                / (1 - self.decision_threshold)
+            )
+
+            if decision_indicator > self.decision_threshold:
+                decision = True
+
+        return decision, probability
 
     @staticmethod
     def _prepare_website_data() -> WebsiteData:
@@ -137,11 +148,7 @@ class MetadataBase:
     ) -> dict:
         website_data.values = values[VALUES]
 
-        probability = self._calculate_probability(website_data=website_data)
-        decision = self._decide(probability=probability)
-
-        if not decision:
-            probability = 0
+        decision, probability = self._decide(website_data=website_data)
 
         data = {
             self.key: {

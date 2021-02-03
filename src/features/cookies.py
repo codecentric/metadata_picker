@@ -19,7 +19,9 @@ class Cookies(MetadataBase):
 
         return {VALUES: [cookie for cookie in raw_cookies if cookie]}
 
-    def _calculate_probability(self, website_data: WebsiteData) -> float:
+    def _calculate_decision_indicator(
+        self, website_data: WebsiteData
+    ) -> float:
         insecure_cookies = []
 
         for cookie in website_data.values:
