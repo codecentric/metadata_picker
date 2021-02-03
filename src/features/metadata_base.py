@@ -97,9 +97,23 @@ class MetadataBase:
     def _calculate_probability_from_ratio(
         self, decision_indicator: float
     ) -> float:
-        return abs(
-            (decision_indicator - self.decision_threshold)
-            / (1 - self.decision_threshold)
+        return (
+            round(
+                abs(
+                    (decision_indicator - self.decision_threshold)
+                    / (1 - self.decision_threshold)
+                ),
+                2,
+            )
+            if self.decision_threshold != 1
+            else 0
+        )
+
+    def _get_decision(self, decision_indicator: float) -> bool:
+        return (
+            decision_indicator > self.decision_threshold
+            if self.decision_threshold != -1
+            else False
         )
 
     def _decide(self, website_data: WebsiteData) -> tuple[bool, float]:
@@ -113,7 +127,7 @@ class MetadataBase:
             probability = self._calculate_probability_from_ratio(
                 decision_indicator
             )
-            decision = decision_indicator > self.decision_threshold
+            decision = self._get_decision(decision_indicator)
         elif (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.SINGLE_OCCURRENCE
@@ -123,7 +137,7 @@ class MetadataBase:
                 if (website_data.values and len(website_data.values) > 0)
                 else 0
             )
-            decision = probability > self.decision_threshold
+            decision = self._get_decision(probability)
         elif (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.FIRST_VALUE
@@ -132,15 +146,17 @@ class MetadataBase:
             probability = self._calculate_probability_from_ratio(
                 website_data.values[0]
             )
-            decision = website_data.values[0] > self.decision_threshold
+            decision = self._get_decision(website_data.values[0])
         elif (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.MEAN_VALUE
             and len(website_data.values) >= 1
         ):
-            mean = sum(website_data.values) / (len(website_data.values))
+            mean = round(
+                sum(website_data.values) / (len(website_data.values)), 2
+            )
             probability = self._calculate_probability_from_ratio(mean)
-            decision = mean > self.decision_threshold
+            decision = self._get_decision(mean)
         elif (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.FALSE_LIST
