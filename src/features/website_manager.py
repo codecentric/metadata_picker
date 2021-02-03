@@ -140,9 +140,7 @@ class WebsiteManager:
                 url=splash_url, headers=SPLASH_HEADERS, params={}
             )
             data = json.loads(response.content.decode("UTF-8"))
-        except JSONDecodeError:
-            data = {}
-        except (OSError, ConnectionError):
+        except (JSONDecodeError, OSError):
             data = {}
         except Exception:
             raise ConnectionError
