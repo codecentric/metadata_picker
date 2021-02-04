@@ -132,45 +132,70 @@ class MetadataBase:
             self.probability_determination_method
             == ProbabilityDeterminationMethod.SINGLE_OCCURRENCE
         ):
-            probability = (
-                1
-                if (website_data.values and len(website_data.values) > 0)
-                else 0
+            decision, probability = self._decide_single_occurrence(
+                website_data
             )
-            decision = self._get_decision(probability)
         elif (
             self.probability_determination_method
             == ProbabilityDeterminationMethod.FIRST_VALUE
-            and len(website_data.values) >= 1
         ):
+            decision, probability = self._decide_first_value(website_data)
+        elif (
+            self.probability_determination_method
+            == ProbabilityDeterminationMethod.MEAN_VALUE
+        ):
+            decision, probability = self._decide_mean_value(website_data)
+        elif (
+            self.probability_determination_method
+            == ProbabilityDeterminationMethod.FALSE_LIST
+        ):
+            decision, probability = self._decide_false_list(website_data)
+        else:
+            decision, probability = self._get_default_decision()
+
+        return decision, probability
+
+    def _decide_single_occurrence(self, website_data):
+        probability = (
+            1 if (website_data.values and len(website_data.values) > 0) else 0
+        )
+        decision = self._get_decision(probability)
+        return decision, probability
+
+    def _decide_first_value(self, website_data):
+        if len(website_data.values) >= 1:
             probability = self._calculate_probability_from_ratio(
                 website_data.values[0]
             )
             decision = self._get_decision(website_data.values[0])
-        elif (
-            self.probability_determination_method
-            == ProbabilityDeterminationMethod.MEAN_VALUE
-            and len(website_data.values) >= 1
-        ):
+        else:
+            decision, probability = self._get_default_decision()
+        return decision, probability
+
+    def _decide_mean_value(self, website_data):
+        if len(website_data.values) >= 1:
             mean = round(
                 sum(website_data.values) / (len(website_data.values)), 2
             )
             probability = self._calculate_probability_from_ratio(mean)
             decision = self._get_decision(mean)
-        elif (
-            self.probability_determination_method
-            == ProbabilityDeterminationMethod.FALSE_LIST
-        ):
-            probability = 1
-            decision = True
-            for false_element in self.false_list:
-                if false_element in website_data.values:
-                    decision = False
-                    break
         else:
-            probability = 0
-            decision = False
+            decision, probability = self._get_default_decision()
+        return decision, probability
 
+    def _decide_false_list(self, website_data):
+        probability = 1
+        decision = True
+        for false_element in self.false_list:
+            if false_element in website_data.values:
+                decision = False
+                break
+        return decision, probability
+
+    @staticmethod
+    def _get_default_decision():
+        probability = 0
+        decision = False
         return decision, probability
 
     @staticmethod
