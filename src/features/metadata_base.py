@@ -275,9 +275,7 @@ class MetadataBase:
         if self.match_rules.whitelist_re is not None:
             whitelist_re = self.match_rules.whitelist_re.finditer
             whitelist_with_options = self.match_rules.whitelist_with_options
-            skip_whitelist = False
         else:
-            skip_whitelist = True
             whitelist_re = None
             whitelist_with_options = None
 
@@ -285,25 +283,28 @@ class MetadataBase:
         blacklist_with_options = self.match_rules.blacklist_with_options
 
         for url in website_data.raw_links:
-            if not skip_whitelist:
-                whitelisted = [el.group() for el in whitelist_re(url)]
-                whitelisted += [
-                    rule.raw_rule_text
-                    for rule in whitelist_with_options
-                    if rule.match_url(url, self.adblockparser_options)
-                ]
+            if whitelist_re is not None:
+                whitelisted = self._get_list_matches(
+                    url, whitelist_re, whitelist_with_options
+                )
                 if len(whitelisted) > 0:
                     self._logger.debug("whitelisted: ", whitelisted)
                     continue
 
-            values += [el.group() for el in blacklist_re(url)]
-            values += [
-                rule.raw_rule_text
-                for rule in blacklist_with_options
-                if rule.match_url(url, self.adblockparser_options)
-            ]
+            values += self._get_list_matches(
+                url, blacklist_re, blacklist_with_options
+            )
 
         return values
+
+    def _get_list_matches(self, url, list_re, list_with_options):
+        matches = [el.group() for el in list_re(url)]
+        matches += [
+            rule.raw_rule_text
+            for rule in list_with_options
+            if rule.match_url(url, self.adblockparser_options)
+        ]
+        return matches
 
     def _work_html_content(self, website_data: WebsiteData) -> list:
         values = []
