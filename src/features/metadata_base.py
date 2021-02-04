@@ -306,18 +306,13 @@ class MetadataBase:
         if self.tag_list:
             if self.extraction_method == ExtractionMethod.MATCH_DIRECTLY:
                 html = "".join(website_data.html)
-                values = [ele for ele in self.tag_list if html.find(ele) >= 0]
+                values = [ele for ele in self.tag_list if ele in html]
             elif self.extraction_method == ExtractionMethod.USE_ADBLOCK_PARSER:
                 values = self._parse_adblock_rules(website_data=website_data)
 
         return values
 
     async def _astart(self, website_data: WebsiteData) -> dict:
-        """
-        Intentionally left empty to force user to implement the respective function in the inheriting class.
-        :param website_data:
-        :return:
-        """
         values = self._work_html_content(website_data=website_data)
         return {VALUES: values}
 
@@ -414,7 +409,6 @@ class MetadataBase:
     def setup(self) -> None:
         """Child function."""
         asyncio.run(self._setup_downloads())
-
         if self.tag_list:
             self._extract_date_from_list()
             self._prepare_tag_list()

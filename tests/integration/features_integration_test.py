@@ -34,7 +34,12 @@ def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
 
     feature = feature_class(_logger)
 
+    before = time.perf_counter()
     feature.setup()
+    print(
+        f"setup for '{feature.__class__.__name__}' took {round(time.perf_counter() - before, 2)}s."
+    )
+
     website_manager = WebsiteManager.get_instance()
 
     website_manager.load_website_data(html)
