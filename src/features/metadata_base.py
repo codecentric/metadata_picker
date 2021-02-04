@@ -331,16 +331,13 @@ class MetadataBase:
     async def _download_multiple_tag_lists(
         self, session: ClientSession
     ) -> list[str]:
-        tasks = []
-        for url in self.urls:
-            tasks.append(self._download_tag_list(url=url, session=session))
-
+        tasks = [
+            self._download_tag_list(url=url, session=session)
+            for url in self.urls
+        ]
         tag_lists = await asyncio.gather(*tasks)
-        complete_list = []
-        for tag_list in tag_lists:
-            complete_list += tag_list
-
-        return list(set(complete_list))
+        complete_list = list(tag for tag_list in tag_lists for tag in tag_list)
+        return complete_list
 
     async def _download_tag_list(
         self, url: str, session: ClientSession
