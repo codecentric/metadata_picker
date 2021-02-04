@@ -278,32 +278,14 @@ class MetadataBase:
         return list({a["href"] for a in soup.find_all(href=True)})
 
     def _parse_adblock_rules(self, website_data: WebsiteData) -> list:
-        values = []
         self.adblockparser_options["domain"] = website_data.top_level_domain
-
-        if self.match_rules.whitelist_re is not None:
-            whitelist_re = self.match_rules.whitelist_re.finditer
-            whitelist_with_options = self.match_rules.whitelist_with_options
-        else:
-            whitelist_re = None
-            whitelist_with_options = None
-
-        blacklist_re = self.match_rules.blacklist_re.finditer
-        blacklist_with_options = self.match_rules.blacklist_with_options
-
-        for url in website_data.raw_links:
-            if whitelist_re is not None:
-                whitelisted = self._get_list_matches(
-                    url, whitelist_re, whitelist_with_options
-                )
-                if len(whitelisted) > 0:
-                    self._logger.debug("whitelisted: ", whitelisted)
-                    continue
-
-            values += self._get_list_matches(
-                url, blacklist_re, blacklist_with_options
+        values = [
+            url
+            for url in website_data.raw_links
+            if self.match_rules.should_block(
+                url=url, options=self.adblockparser_options
             )
-
+        ]
         return values
 
     def _get_list_matches(
