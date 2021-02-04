@@ -4,6 +4,7 @@ import re
 from collections import OrderedDict
 from enum import Enum
 from logging import Logger
+from typing import Callable
 from urllib.parse import urlparse
 
 import adblockparser
@@ -155,14 +156,18 @@ class MetadataBase:
 
         return decision, probability
 
-    def _decide_single_occurrence(self, website_data):
+    def _decide_single_occurrence(
+        self, website_data: WebsiteData
+    ) -> tuple[float, float]:
         probability = (
             1 if (website_data.values and len(website_data.values) > 0) else 0
         )
         decision = self._get_decision(probability)
         return decision, probability
 
-    def _decide_first_value(self, website_data):
+    def _decide_first_value(
+        self, website_data: WebsiteData
+    ) -> tuple[float, float]:
         if len(website_data.values) >= 1:
             probability = self._calculate_probability_from_ratio(
                 website_data.values[0]
@@ -172,7 +177,9 @@ class MetadataBase:
             decision, probability = self._get_default_decision()
         return decision, probability
 
-    def _decide_mean_value(self, website_data):
+    def _decide_mean_value(
+        self, website_data: WebsiteData
+    ) -> tuple[float, float]:
         if len(website_data.values) >= 1:
             mean = round(
                 sum(website_data.values) / (len(website_data.values)), 2
@@ -183,7 +190,9 @@ class MetadataBase:
             decision, probability = self._get_default_decision()
         return decision, probability
 
-    def _decide_false_list(self, website_data):
+    def _decide_false_list(
+        self, website_data: WebsiteData
+    ) -> tuple[float, float]:
         probability = 1
         decision = True
         for false_element in self.false_list:
@@ -193,7 +202,7 @@ class MetadataBase:
         return decision, probability
 
     @staticmethod
-    def _get_default_decision():
+    def _get_default_decision() -> tuple[float, float]:
         probability = 0
         decision = False
         return decision, probability
@@ -297,7 +306,9 @@ class MetadataBase:
 
         return values
 
-    def _get_list_matches(self, url, list_re, list_with_options):
+    def _get_list_matches(
+        self, url: str, list_re: Callable, list_with_options: list
+    ) -> list:
         matches = [el.group() for el in list_re(url)]
         matches += [
             rule.raw_rule_text
