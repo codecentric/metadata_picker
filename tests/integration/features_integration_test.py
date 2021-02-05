@@ -49,8 +49,6 @@ def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
     else:
         data = feature.start()
 
-    print(website_manager.website_data.raw_links)
-    print(data)
     website_manager.reset()
 
     try:
