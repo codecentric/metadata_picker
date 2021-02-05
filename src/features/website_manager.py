@@ -231,7 +231,7 @@ class WebsiteManager:
             for link in self.website_data.raw_links
         ]
         self.website_data.extensions = [
-            x for x in list(set(file_extensions)) if x != ""
+            x for x in self._get_unique_list(file_extensions) if x != ""
         ]
 
     def _load_har(self, har: str) -> None:
