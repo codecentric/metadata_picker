@@ -163,7 +163,41 @@ class WebsiteManager:
             self.website_data.html, "html.parser"
         )
 
+    @staticmethod
+    def _get_unique_list(items: list) -> list:
+        seen = set()
+        for element in range(len(items) - 1, -1, -1):
+            item = items[element]
+            if item in seen:
+                del items[element]
+            else:
+                seen.add(item)
+        return items
+
     def _extract_raw_links(self) -> None:
+
+        script_re = re.compile(r"src\=[\"|\']([\w\d\:\/\.\-\?\=]+)[\"|\']")
+
+        links = [
+            link
+            for tag in self.website_data.soup.find_all()
+            for element in self.website_data.soup.find_all(tag.name)
+            for link in self._get_raw_link_from_tag_element(
+                element, script_re, tag.name
+            )
+            if link is not None
+        ]
+        self.website_data.raw_links = self._get_unique_list(
+            links
+            + [el for el in self.website_data.image_links if el is not None]
+        )
+
+    @staticmethod
+    def _get_raw_link_from_tag_element(
+        element: bs4.element.ResultSet,
+        script_re: re.Pattern,
+        tag: BeautifulSoup,
+    ) -> list:
         attributes = [
             "href",
             "src",
@@ -172,31 +206,6 @@ class WebsiteManager:
             "data-src",
             "data-srcset",
         ]
-
-        script_re = re.compile(r"src\=[\"|\']([\w\d\:\/\.\-\?\=]+)[\"|\']")
-
-        links = {
-            link
-            for tag in self.website_data.soup.find_all()
-            for el in self.website_data.soup.find_all(tag.name)
-            for link in self._get_raw_link_from_tag_element(
-                attributes, el, script_re, tag.name
-            )
-        }
-
-        self.website_data.raw_links = [
-            el
-            for el in links | set(self.website_data.image_links)
-            if el is not None
-        ]
-
-    @staticmethod
-    def _get_raw_link_from_tag_element(
-        attributes: list,
-        element: bs4.element.ResultSet,
-        script_re: re.Pattern,
-        tag: BeautifulSoup,
-    ) -> list:
         links = []
         if element is not None:
             if tag == "script":
