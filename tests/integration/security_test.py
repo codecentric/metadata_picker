@@ -67,7 +67,7 @@ def test_decide():
     expected_decision = True
     expected_probability = 1.0
 
-    security.tags = security_tags
+    security.expected_headers = security_tags
 
     decision, probability = security._decide(website_data=website_data)
 
