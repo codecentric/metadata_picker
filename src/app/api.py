@@ -147,11 +147,11 @@ class ExtractorTags(BaseModel):
         "Probability = "
         "1 If any matching element is found, else 0.",
     )
-    content_security_policy: MetadataTags = Field(
+    security: MetadataTags = Field(
         default=None,
         description="Release. Are security policies set?"
         "Probability = "
-        "1 If any matching element is found, else 0.",
+        "Ratio of matching elements.",
     )
     iframe_embeddable: MetadataTags = Field(
         default=None,
