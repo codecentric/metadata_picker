@@ -16,6 +16,8 @@ class Security(MetadataBase):
             0: ["1"],
             1: ["mode=block"],
         },
+        "cache-control": {0: ["no-cache", "no-store"]},
+        "strict-transport-security": {0: ["max-age=", "includeSubDomains"]},
     }
 
     @staticmethod
@@ -27,16 +29,13 @@ class Security(MetadataBase):
 
         for tag, expected_value in self.tags.items():
             if tag in website_data.headers:
-
                 header_value = [
-                    self._work_text(value)
+                    self._work_text(value).replace(",", ";").split(";")
                     for value in website_data.headers[tag]
                 ]
+                header_value = [el for val in header_value for el in val]
 
-                print("header items:, ", website_data.headers[tag])
-                print("expected_value: ,", expected_value)
                 for idx, element in expected_value.items():
-                    print("idx:", idx, element, len(element))
                     expected_value.update(
                         {
                             int(idx): [
@@ -45,25 +44,22 @@ class Security(MetadataBase):
                         }
                     )
 
-                print("header_value: ,", header_value)
-                print("expected_value: ,", expected_value)
+                found_values = sum(
+                    [
+                        1
+                        for value in expected_value.values()
+                        for val in value
+                        if val in header_value
+                    ]
+                )
 
-                header_value = [
-                    val.replace(",", ";").split(";") for val in header_value
-                ]
-                header_value = [el for val in header_value for el in val]
-                print("header_value2: ,", header_value)
-
-                found_values = 0
-                for key, value in expected_value.items():
-                    found_val = False
-                    for val in value:
-                        if val in header_value:
-                            found_val = True
-
-                    found_values += int(found_val)
-
-                print(f"found_values, {found_values}")
+                if tag == "strict-transport-security":
+                    for el in header_value:
+                        if (
+                            el.startswith("maxage=")
+                            and int(el.split("=")[-1]) > 0
+                        ):
+                            found_values += 1
 
                 if found_values == len(expected_value.keys()):
                     values.append(tag)

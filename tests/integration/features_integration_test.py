@@ -56,6 +56,8 @@ def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
     finally:
         website_manager.reset()
 
+    print(data)
+
     try:
         are_values_correct = set(data[feature.key]["values"]) == set(
             expectation[feature.key]["values"]

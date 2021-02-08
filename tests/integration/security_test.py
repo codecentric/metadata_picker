@@ -11,10 +11,10 @@ else:
     from tests.integration.features_integration_test import _test_feature
 
 security_tags = {
-    "vary": ["accept-encoding", "cookie"],
     "x-frame-options": ["same_origin"],
     "content-security-policy": ["same_origin"],
-    "x-xss-protection": ["1;mode=block"],  # sometimes delimited with ","
+    "x-xss-protection": ["1,mode=block"],
+    "strict-transport-security": ["max-age=15768000"],
 }
 
 
@@ -34,6 +34,7 @@ def test_start():
                 "x-frame-options",
                 "content-security-policy",
                 "x-xss-protection",
+                "strict-transport-security",
             ],
             "excluded_values": [],
             "runs_within": 2,  # time the evaluation may take AT MAX -> acceptance test}
