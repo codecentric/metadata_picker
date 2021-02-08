@@ -14,10 +14,11 @@ security_tags = {
     "vary": ["accept-encoding", "cookie"],
     "x-frame-options": ["same_origin"],
     "content-security-policy": ["same_origin"],
+    "x-xss-protection": ["1;mode=block"],  # sometimes delimited with ","
 }
 
 
-def test_content_security_policy():
+def test_start():
     feature = Security
     feature._create_key(feature)
 
@@ -29,8 +30,12 @@ def test_content_security_policy():
     }
     expected = {
         feature.key: {
-            "values": ["x-frame-options", "content-security-policy"],
-            "excluded_values": ["deny"],
+            "values": [
+                "x-frame-options",
+                "content-security-policy",
+                "x-xss-protection",
+            ],
+            "excluded_values": [],
             "runs_within": 2,  # time the evaluation may take AT MAX -> acceptance test}
         }
     }
@@ -56,13 +61,12 @@ def test_decide():
         "x-frame-options",
         "content-security-policy",
         "vary",
+        "x-xss-protection",
     ]
     expected_decision = True
     expected_probability = 1.0
 
-    print(security.tags)
     security.tags = security_tags
-    print(security.tags)
 
     decision, probability = security._decide(website_data=website_data)
 

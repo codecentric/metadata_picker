@@ -1,6 +1,7 @@
 import asyncio
 import os
 import time
+import traceback
 from urllib.parse import urlparse
 
 from features.cookies import Cookies
@@ -50,6 +51,8 @@ def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
             data = feature.start()
     except Exception as e:
         print("Exception: ", e.args)
+        traceback.print_exc()
+        data = {}
     finally:
         website_manager.reset()
 
