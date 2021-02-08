@@ -6,27 +6,46 @@ from lib.constants import VALUES
 class Security(MetadataBase):
     decision_threshold = 1
 
-    tags = {
-        "X-Content-Type-Options": "nosniff",
-        "content-security-policy": "same_origin",
-        "X-XSS-Protection": "1; mode=block",
+    tags: dict = {
+        "x-content-type-options": {
+            "nosniff",
+        },
+        "x-frame-options": {"same_origin"},
+        "content-security-policy": {
+            "same_origin",
+        },
+        "x-xss-protection": {
+            "1",
+            "mode=block",
+        },
     }
+
+    @staticmethod
+    def _work_text(text: str) -> str:
+        return text.replace("_", "").replace("-", "").lower()
 
     def _start(self, website_data: WebsiteData) -> dict:
         values = []
+
         for tag, expected_value in self.tags.items():
-            if (
-                tag.lower() in website_data.headers
-                and website_data.headers[tag.lower()] == expected_value
-            ):
-                values.append(tag)
+            if tag in website_data.headers:
+
+                header_value = [
+                    self._work_text(value)
+                    for value in website_data.headers[tag]
+                ]
+                expected_value = {
+                    self._work_text(value) for value in expected_value
+                }
+
+                if (set(expected_value) & set(header_value)) == set(
+                    expected_value
+                ):
+                    values.append(tag)
+
         return {VALUES: values}
 
     def _decide(self, website_data: WebsiteData) -> tuple[bool, float]:
-        probability = 0
-        for tag in self.tags.keys():
-            if tag in website_data.values:
-                probability += 1.0 / len(self.tags.keys())
-
+        probability = len(website_data.values) / len(self.tags.keys())
         decision = probability >= self.decision_threshold
         return decision, probability

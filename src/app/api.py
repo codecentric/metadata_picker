@@ -55,7 +55,7 @@ class ListTags(BaseModel):
     easylist_germany: Optional[bool] = True
     easylist_adult: Optional[bool] = True
     paywall: Optional[bool] = True
-    content_security_policy: Optional[bool] = True
+    security: Optional[bool] = True
     iframe_embeddable: Optional[bool] = True
     pop_up: Optional[bool] = True
     reg_wall: Optional[bool] = True

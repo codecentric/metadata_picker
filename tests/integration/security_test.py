@@ -11,8 +11,9 @@ else:
     from tests.integration.features_integration_test import _test_feature
 
 security_tags = {
-    "content-security-policy": "same_origin",
-    "X-Content-Type-Options": "nosniff",
+    "vary": ["accept-encoding", "cookie"],
+    "x-frame-options": ["same_origin"],
+    "content-security-policy": ["same_origin"],
 }
 
 
@@ -28,7 +29,7 @@ def test_content_security_policy():
     }
     expected = {
         feature.key: {
-            "values": ["X-Content-Type-Options", "content-security-policy"],
+            "values": ["x-frame-options", "content-security-policy"],
             "excluded_values": ["deny"],
             "runs_within": 2,  # time the evaluation may take AT MAX -> acceptance test}
         }
@@ -51,7 +52,11 @@ def test_decide():
     security = Security(_logger)
 
     website_data = WebsiteData()
-    website_data.values = ["X-Content-Type-Options", "content-security-policy"]
+    website_data.values = [
+        "x-frame-options",
+        "content-security-policy",
+        "vary",
+    ]
     expected_decision = True
     expected_probability = 1.0
 
