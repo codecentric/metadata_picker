@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import traceback
 from dataclasses import dataclass, field
 from json import JSONDecodeError
 from typing import NoReturn
@@ -87,6 +88,13 @@ class WebsiteManager:
             response = self._get_html_and_har(self.website_data.url)
             message[MESSAGE_HTML] = response[MESSAGE_HTML]
             message[MESSAGE_HAR] = response[MESSAGE_HAR]
+            if MESSAGE_HEADERS in message.keys():
+                message[MESSAGE_HEADERS] = response[MESSAGE_HEADERS]
+                self.website_data.raw_header = message[MESSAGE_HEADERS]
+                self._preprocess_header()
+                self._logger.warning(
+                    f"raw header: {self.website_data.raw_header}; processed header: {self.website_data.headers}"
+                )
 
         if message[MESSAGE_HTML] != "" and self.website_data.html == "":
             self.website_data.html = message[MESSAGE_HTML].lower()
@@ -112,6 +120,7 @@ class WebsiteManager:
 
     def _preprocess_header(self) -> None:
         header: str = self.website_data.raw_header.lower()
+        self._logger.warning(f"header 1: {header}")
         header = (
             header.replace("b'", '"')
             .replace("/'", '"')
@@ -129,19 +138,37 @@ class WebsiteManager:
                 + header[idx + 2 : idx + bracket_idx - 2].replace('"', " ")
                 + header[idx + bracket_idx - 1 :]
             )
-
+        self._logger.warning(f"header 10: {header}")
         header = json.loads(header)
         self.website_data.headers = header
+
+    def _transform_raw_header(self, raw_headers: list) -> dict:
+        headers = {}
+
+        self._logger.warning(f"(Working header: {raw_headers}")
+        for header_element in raw_headers:
+            self._logger.warning(f"(Working header_element: {header_element}")
+            headers.update(
+                {
+                    header_element["name"]: [
+                        header_element["value"].replace('"', "")
+                    ]
+                }
+            )
+
+        self._logger.warning(f"(Worked headers: {headers}")
+        return headers
 
     def _get_html_and_har(self, url: str) -> dict:
         splash_url = (
             f"{SPLASH_URL}/render.json?url={url}&html={1}&iframes={1}"
-            f"&har={1}&response_body={1}&wait={1}"
+            f"&har={1}&response_body={1}&wait={1}&history={1}"
         )
-
         try:
             response = requests.get(
-                url=splash_url, headers=SPLASH_HEADERS, params={}
+                url=splash_url,
+                headers=SPLASH_HEADERS,
+                params={},
             )
             data = json.loads(response.content.decode("UTF-8"))
         except (JSONDecodeError, OSError) as e:
@@ -151,15 +178,34 @@ class WebsiteManager:
             raise ConnectionError
 
         try:
+            raw_headers = data["har"]["log"]["entries"][0]["response"][
+                "headers"
+            ]
+        except KeyError:
+            raw_headers = []
+
+        html = ""
+        har = ""
+        headers = ""
+        try:
             html = data["html"]
             har = str(json.dumps(data["har"]))
-        except KeyError:
-            html = ""
-            har = ""
+            headers = str(json.dumps(self._transform_raw_header(raw_headers)))
+            self._logger.warning(f"(Worked headers2: {headers}")
+        except KeyError as e:
+            exception = (
+                f"Key error from splash container data: '{e.args}'. "
+                f"{''.join(traceback.format_exception(None, e, e.__traceback__))}"
+            )
+            self._logger.exception(
+                exception,
+                exc_info=True,
+            )
 
         return {
             MESSAGE_HTML: html,
             MESSAGE_HAR: har,
+            MESSAGE_HEADERS: headers,
         }
 
     def _create_html_soup(self) -> None:

@@ -28,12 +28,16 @@ class Security(MetadataBase):
         values = []
 
         for tag, expected_value in self.expected_headers.items():
+            self._logger.warning(f"security, tag: {tag}, {expected_value}")
             if tag in website_data.headers:
                 header_value = self._extract_header_values(
                     website_data.headers[tag]
                 )
 
                 expected_value = self._process_expected_values(expected_value)
+                self._logger.warning(
+                    f"security, header_value: {header_value}, {expected_value}"
+                )
 
                 found_values = self._number_of_expected_keys_in_header(
                     expected_value, header_value
