@@ -159,16 +159,14 @@ class MetadataBase:
     def _decide_single_occurrence(
         self, website_data: WebsiteData
     ) -> tuple[float, float]:
-        probability = (
-            1 if (website_data.values and len(website_data.values) > 0) else 0
-        )
+        probability = 1 if (website_data.values and website_data.values) else 0
         decision = self._get_decision(probability)
         return decision, probability
 
     def _decide_first_value(
         self, website_data: WebsiteData
     ) -> tuple[float, float]:
-        if len(website_data.values) >= 1:
+        if website_data.values:
             probability = self._calculate_probability_from_ratio(
                 website_data.values[0]
             )
@@ -180,7 +178,7 @@ class MetadataBase:
     def _decide_mean_value(
         self, website_data: WebsiteData
     ) -> tuple[float, float]:
-        if len(website_data.values) >= 1:
+        if website_data.values:
             mean = round(
                 sum(website_data.values) / (len(website_data.values)), 2
             )

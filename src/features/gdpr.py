@@ -43,7 +43,7 @@ class GDPR(MetadataBase):
         values = []
         for key in ["includesubdomains", "preload"]:
             matches = [element for element in sts if key in element]
-            if len(matches) > 0:
+            if matches:
                 values += [key]
             else:
                 values += [f"do_not_{key}"]
@@ -60,14 +60,14 @@ class GDPR(MetadataBase):
 
         regex = re.compile(r"referrerpolicy")
         matches = re.findall(regex, website_data.html)
-        if len(matches) > 0:
+        if matches:
             values += [matches]
         else:
             values += ["no_referrerpolicy"]
 
         regex = re.compile(r"<link rel=(.*?)href")
         matches = re.findall(regex, website_data.html)
-        if len(matches) > 0:
+        if matches:
             values += [
                 match.replace('"', "").replace(" ", "") for match in matches
             ]
@@ -87,7 +87,7 @@ class GDPR(MetadataBase):
             url_matches = re.findall(url_regex, match)
             found_fonts += [url_match for url_match in url_matches]
 
-        if len(found_fonts) > 0:
+        if found_fonts:
             found_fonts = "found_fonts," + ",".join(found_fonts)
         else:
             found_fonts = "found_no_fonts"
@@ -124,10 +124,10 @@ class GDPR(MetadataBase):
         ]
         for input_type in input_types:
             matches = website_data.soup.find_all(input_type)
-            if len(matches) > 0:
+            if matches:
                 inputs += [input_type]
 
-        if len(inputs) > 0:
+        if inputs:
             inputs = "found_inputs," + ",".join(inputs)
         else:
             inputs = "found_no_inputs"

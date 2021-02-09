@@ -187,7 +187,7 @@ class ExtractFromFiles(MetadataBase):
         probability = 0
         extractable_files = self._get_extractable_files(website_data)
 
-        if len(website_data.values) > 0:
+        if website_data.values:
             probability = len(extractable_files) / len(website_data.values)
 
         decision = probability > self.decision_threshold

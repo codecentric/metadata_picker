@@ -28,6 +28,6 @@ class Cookies(MetadataBase):
             if not cookie["httpOnly"] or not cookie["secure"]
         ]
 
-        probability = 1 if len(insecure_cookies) > 0 else 0
+        probability = 1 if insecure_cookies else 0
         decision = probability > self.decision_threshold
         return decision, probability

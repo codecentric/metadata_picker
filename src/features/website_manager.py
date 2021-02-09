@@ -244,7 +244,7 @@ class WebsiteManager:
         if element is not None:
             if tag == "script":
                 matches = script_re.findall(str(element).replace("\n", ""))
-                if len(matches) > 0:
+                if matches:
                     links += matches
             links += [
                 element.attrs.get(attribute)
