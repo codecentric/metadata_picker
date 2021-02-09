@@ -248,8 +248,6 @@ class Output(BaseModel):
 app = FastAPI(title=METADATA_EXTRACTOR, version=VERSION)
 app.communicator: QueueCommunicator
 shared_status = shared_memory.ShareableList([0])
-shared_status[0] = 1
-print(f"{__name__}")
 
 
 def _convert_dict_to_output_model(
