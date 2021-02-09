@@ -10,26 +10,9 @@ class GDPR(MetadataBase):
     decision_threshold = 0.9
 
     @staticmethod
-    def _check_https_in_url(website_data: WebsiteData) -> tuple[list, list]:
-        http = "http"
-        https = "https"
-        https_in_url = https in website_data.url
-        if https_in_url:
-            value = ["https_in_url"]
-        else:
-            value = ["https_not_in_url"]
-
-        https_in_all_links = [
-            True if https in url or http not in url else False
-            for url in website_data.raw_links
-        ]
-        if False in https_in_all_links:
-            http_links = website_data.raw_links[
-                https_in_all_links.index(False)
-            ]
-        else:
-            http_links = []
-        return value, http_links
+    def _check_https_in_url(website_data: WebsiteData) -> list:
+        value = "not" if "https" not in website_data.url else ""
+        return [value + "https_in_url"]
 
     def _get_hsts(self, website_data: WebsiteData) -> list:
         if STRICT_TRANSPORT_SECURITY in website_data.headers.keys():
@@ -43,16 +26,16 @@ class GDPR(MetadataBase):
 
     @staticmethod
     def _extract_max_age(sts: list) -> list:
-        values = []
+        values = ["do_not_max_age"]
         regex = re.compile(r"max-age=(\d*)")
         try:
             match = min(
                 [int(regex.match(element).group(1)) for element in sts]
             )
             if match > 10886400:
-                values.extend(["max_age"])
+                values = ["max_age"]
         except AttributeError:
-            values.extend(["do_not_max_age"])
+            pass
         return values
 
     @staticmethod
@@ -77,7 +60,6 @@ class GDPR(MetadataBase):
 
         regex = re.compile(r"referrerpolicy")
         matches = re.findall(regex, website_data.html)
-
         if len(matches) > 0:
             values += [matches]
         else:
@@ -85,7 +67,6 @@ class GDPR(MetadataBase):
 
         regex = re.compile(r"<link rel=(.*?)href")
         matches = re.findall(regex, website_data.html)
-
         if len(matches) > 0:
             values += [
                 match.replace('"', "").replace(" ", "") for match in matches
@@ -96,7 +77,7 @@ class GDPR(MetadataBase):
         return values
 
     @staticmethod
-    def _find_fonts(website_data: WebsiteData) -> list:
+    def _find_fonts(website_data: WebsiteData) -> list[str]:
         regex = re.compile(r"@font-face\s*{[\s\w\d\D\n]*?}")
         matches = re.findall(regex, website_data.html)
         url_regex = re.compile(r"url\((.*?)\)")
@@ -113,7 +94,7 @@ class GDPR(MetadataBase):
         return [found_fonts]
 
     @staticmethod
-    def _find_input_fields(website_data: WebsiteData) -> list:
+    def _find_input_fields(website_data: WebsiteData) -> list[str]:
         inputs = []
         input_types = [
             "input",
@@ -156,16 +137,14 @@ class GDPR(MetadataBase):
         impressum = super()._start(website_data=website_data)[VALUES]
         values = impressum
 
-        value, http_links = self._check_https_in_url(website_data=website_data)
-        values += value
-
-        values += self._get_hsts(website_data=website_data)
-
-        values += self._get_referrer_policy(website_data=website_data)
-
-        values += self._find_fonts(website_data=website_data)
-
-        values += self._find_input_fields(website_data=website_data)
+        for func in [
+            self._check_https_in_url,
+            self._get_hsts,
+            self._get_referrer_policy,
+            self._find_fonts,
+            self._find_input_fields,
+        ]:
+            values += func(website_data=website_data)
 
         flat_values = []
         for value in values:
@@ -174,7 +153,7 @@ class GDPR(MetadataBase):
             else:
                 flat_values.append(value)
 
-        return {VALUES: list(set(flat_values)), "http_links": http_links}
+        return {VALUES: list(set(flat_values))}
 
     def _decide(self, website_data: WebsiteData) -> tuple[bool, float]:
         decision_indicator = 0.5
@@ -191,9 +170,6 @@ class GDPR(MetadataBase):
             or "found_no_inputs" in website_data.values
         ):
             decision_indicator -= 0.1
-
-        if decision_indicator < 0:
-            decision_indicator = 0
 
         decision = decision_indicator > self.decision_threshold
         return decision, decision_indicator
