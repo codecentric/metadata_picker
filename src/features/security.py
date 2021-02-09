@@ -85,7 +85,8 @@ class Security(MetadataBase):
         )
         return found_values
 
-    def _is_sts_mag_age_greater_than_zero(self, header_value: list) -> bool:
+    @staticmethod
+    def _is_sts_mag_age_greater_than_zero(header_value: list) -> bool:
         greater_than_zero = False
         for el in header_value:
             if el.startswith("maxage=") and int(el.split("=")[-1]) > 0:

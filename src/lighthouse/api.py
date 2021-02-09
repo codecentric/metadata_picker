@@ -53,7 +53,6 @@ def accessibility(input_data: Input):
     )
 
     std_out = [line.decode() for line in iter(p.stdout.readline, b"")]
-
     std_out = json.loads("".join(std_out))
 
     output = Output()
