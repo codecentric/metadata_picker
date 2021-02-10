@@ -469,7 +469,6 @@ format("svg");font-weight: normal;font-style: normal;font-display: fallback;}
                 "do_not_preload",
                 "max_age",
                 "found_fonts,https://canyoublockit.com/wp-content/themes/astra/assets/fonts/astra.svg#astra",
-                "no_referrerpolicy",
                 "no-referrer",
                 "found_inputs,button,datetime",
                 "impressum",

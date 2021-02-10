@@ -4,7 +4,6 @@ import re
 from collections import OrderedDict
 from enum import Enum
 from logging import Logger
-from typing import Callable
 from urllib.parse import urlparse
 
 import adblockparser
@@ -280,17 +279,6 @@ class MetadataBase:
         ]
         return values
 
-    def _get_list_matches(
-        self, url: str, list_re: Callable, list_with_options: list
-    ) -> list:
-        matches = [el.group() for el in list_re(url)]
-        matches += [
-            rule.raw_rule_text
-            for rule in list_with_options
-            if rule.match_url(url, self.adblockparser_options)
-        ]
-        return matches
-
     def _work_html_content(self, website_data: WebsiteData) -> list:
         values = []
 
@@ -407,4 +395,6 @@ class MetadataBase:
             self._extract_date_from_list()
             self._prepare_tag_list()
             if self.extraction_method == ExtractionMethod.USE_ADBLOCK_PARSER:
-                self.match_rules = adblockparser.AdblockRules(self.tag_list)
+                self.match_rules = adblockparser.AdblockRules(
+                    self.tag_list, skip_unsupported_rules=False
+                )

@@ -58,13 +58,6 @@ class GDPR(MetadataBase):
         else:
             values = [f"no_{referrer_policy}"]
 
-        regex = re.compile(r"referrerpolicy")
-        matches = re.findall(regex, website_data.html)
-        if matches:
-            values += [matches]
-        else:
-            values += ["no_referrerpolicy"]
-
         regex = re.compile(r"<link rel=(.*?)href")
         matches = re.findall(regex, website_data.html)
         if matches:
