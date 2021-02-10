@@ -6,7 +6,14 @@ from aiohttp import ClientConnectorError, ClientSession
 
 from features.metadata_base import MetadataBase, ProbabilityDeterminationMethod
 from features.website_manager import WebsiteData
-from lib.constants import ACCESSIBILITY, DESKTOP, MESSAGE_URL, SCORE, VALUES
+from lib.constants import (
+    ACCESSIBILITY,
+    DESKTOP,
+    MESSAGE_URL,
+    MOBILE,
+    SCORE,
+    VALUES,
+)
 from lib.settings import LIGHTHOUSE_API_PORT
 
 
@@ -62,7 +69,7 @@ class Accessibility(MetadataBase):
                         session=session,
                         strategy=strategy,
                     )
-                    for strategy in [DESKTOP, "mobile"]
+                    for strategy in [DESKTOP, MOBILE]
                 ]
             )
         return {VALUES: score}
