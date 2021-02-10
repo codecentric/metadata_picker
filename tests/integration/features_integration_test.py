@@ -62,8 +62,6 @@ def _test_feature(feature_class, html, expectation) -> tuple[bool, bool]:
     are_values_correct = False
     try:
         if data[feature.key]["values"]:
-            print(1)
-            print(type(data[feature.key]["values"][0]))
             if isinstance(data[feature.key]["values"][0], dict):
                 value_names = [
                     value["name"] for value in data[feature.key]["values"]
