@@ -8,7 +8,7 @@ jobs:
   build:
     strategy:
       matrix:
-        python-version: [3.9.1]
+        python-version: [3.9.5]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
